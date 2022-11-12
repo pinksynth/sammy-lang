@@ -11,6 +11,7 @@ const {
     CT_LESS_THAN,
     CT_NUMBER,
     CT_PERCENT,
+    CT_PERIOD,
     CT_UNDERSCORE,
     CT_WHITESPACE,
   },
@@ -51,6 +52,8 @@ const getToken = ({
   lineNumberEnd,
   lineNumberStart,
   multilineCommentMode,
+  numberMode,
+  numberFloatingPointApplied,
   singleLineCommentMode,
   stringLiteralMode,
 }) => {
@@ -82,11 +85,13 @@ const getToken = ({
   if (latestCharType === CT_IDENTIFIER && charType === CT_IDENTIFIER) {
     return false
   }
-  if (
-    (latestCharType === CT_NUMBER || latestCharType === CT_UNDERSCORE) &&
-    (charType === CT_NUMBER || charType === CT_UNDERSCORE)
-  ) {
-    return false
+  if (numberMode) {
+    if (charType === CT_PERIOD && !numberFloatingPointApplied) {
+      return false
+    }
+    if (charType === CT_NUMBER || charType === CT_UNDERSCORE) {
+      return false
+    }
   }
   if (latestCharType === CT_LESS_THAN && charType === CT_LESS_THAN) {
     return false
@@ -194,6 +199,8 @@ const lex = (sammyScript) => {
   let stringLiteralMode = false
   let singleLineCommentMode = false
   let multilineCommentMode = false
+  let numberMode = false
+  let numberFloatingPointApplied = false
 
   for (let index = 0; index < sammyScript.length; index++) {
     const char = sammyScript[index]
@@ -208,6 +215,8 @@ const lex = (sammyScript) => {
       lineNumberEnd: currentLineNumber,
       lineNumberStart: tokenLineNumberStart,
       multilineCommentMode,
+      numberFloatingPointApplied,
+      numberMode,
       singleLineCommentMode,
       stringLiteralMode,
     })
@@ -217,6 +226,31 @@ const lex = (sammyScript) => {
       tokenLineNumberStart = currentLineNumber
       tokenColumnNumberStart = currentColumnNumber
       charAccumulator = []
+    }
+
+    if (charAccumulator.length === 0 && charType === CT_NUMBER) {
+      numberMode = true
+    }
+
+    // If encountering a period in number mode, assume it is our decimal point.
+    if (numberMode && charType === CT_PERIOD) {
+      if (numberFloatingPointApplied) {
+        numberMode = false
+        numberFloatingPointApplied = false
+        // If we've already placed our decimal point and see another dot, it's a new token.
+      } else {
+        numberFloatingPointApplied = true
+      }
+    }
+
+    if (
+      numberMode &&
+      charType !== CT_NUMBER &&
+      charType !== CT_UNDERSCORE &&
+      charType !== CT_PERIOD
+    ) {
+      numberMode = false
+      numberFloatingPointApplied = false
     }
 
     if (charType === CT_DOUBLE_QUOTE) {
@@ -254,8 +288,6 @@ const lex = (sammyScript) => {
       multilineCommentMode = false
     }
 
-    charAccumulator.push(char)
-
     if (char === "\n") {
       currentLineNumber++
       currentColumnNumber = 1
@@ -264,6 +296,9 @@ const lex = (sammyScript) => {
       currentColumnNumber++
       currentLineValue += char
     }
+
+    charAccumulator.push(char)
+    if (token) console.log([token.value, token.tokenType])
   }
 
   tokens.push(
@@ -274,15 +309,10 @@ const lex = (sammyScript) => {
       currentLineValue,
       lineNumberEnd: currentLineNumber,
       lineNumberStart: tokenLineNumberStart,
+      numberFloatingPointApplied,
+      numberMode,
       stringLiteralMode,
     })
-  )
-
-  console.dir(
-    tokens
-      .filter((t) => t.tokenType !== TT_WHITESPACE)
-      .map((t) => [t.value, t.tokenType]),
-    { maxArrayLength: null }
   )
 }
 
