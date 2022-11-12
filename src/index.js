@@ -162,10 +162,8 @@ const getToken = ({
   let tokenType
   if (value === "%[") {
     tokenType = TT_OBJECT_OPEN
-  } else if (value === "<<<") {
-    tokenType = TT_MULTILINE_OPEN
-  } else if (value === ">>>") {
-    tokenType = TT_MULTILINE_CLOSE
+  } else if (value.substring(0, 3) === "<<<") {
+    tokenType = TT_COMMENT
   } else if (charTypeFrom(value[0]) === CT_DOUBLE_QUOTE) {
     tokenType = TT_STRING
   } else if (charTypeFrom(value[0]) === CT_HASH) {
@@ -276,7 +274,7 @@ const lex = (sammyScript) => {
       charType === CT_LESS_THAN &&
       !stringLiteralMode &&
       !singleLineCommentMode &&
-      charAccumulator.join("") === "<<<"
+      charAccumulator.join("") === "<<"
     ) {
       multilineCommentMode = true
     }
@@ -285,7 +283,7 @@ const lex = (sammyScript) => {
       charType === CT_GREATER_THAN &&
       !stringLiteralMode &&
       !singleLineCommentMode &&
-      charAccumulator.join("") === ">>>"
+      charAccumulator.join("").substring(charAccumulator.length - 2) === ">>"
     ) {
       multilineCommentMode = false
     }
