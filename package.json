@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/pinksynth/sammy-lang/issues"
   },
-  "homepage": "https://github.com/pinksynth/sammy-lang#readme"
+  "homepage": "https://github.com/pinksynth/sammy-lang#readme",
+  "devDependencies": {
+    "eslint": "^8.27.0"
+  }
 }

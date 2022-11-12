@@ -1,3 +1,4 @@
+/* global console */
 // Character types
 const CT_ASTERISK /*         */ = "CT_ASTERISK"
 const CT_BACKSLASH /*        */ = "CT_BACKSLASH"
@@ -36,15 +37,13 @@ const TT_COMMENT /*          */ = "TT_COMMENT"
 const TT_CURLY_CLOSE /*      */ = "TT_CURLY_CLOSE"
 const TT_CURLY_OPEN /*       */ = "TT_CURLY_OPEN"
 const TT_DOT /*              */ = "TT_DOT"
-const TT_MULTILINE_OPEN /*   */ = "TT_MULTILINE_OPEN"
-const TT_MULTILINE_CLOSE /*  */ = "TT_MULTILINE_CLOSE"
 const TT_NULL /*             */ = "TT_NULL"
 const TT_NUMBER /*           */ = "TT_NUMBER"
 const TT_OBJECT_OPEN /*      */ = "TT_OBJECT_OPEN"
 const TT_OPERATOR_INFIX /*   */ = "TT_OPERATOR_INFIX"
 const TT_PAREN_CLOSE /*      */ = "TT_PAREN_CLOSE"
 const TT_PAREN_OPEN /*       */ = "TT_PAREN_OPEN"
-const TT_STRICT_COMPARE /*   */ = "TT_STRICT_COMPARE"
+// const TT_STRICT_COMPARE /*   */ = "TT_STRICT_COMPARE"
 const TT_STRING /*           */ = "TT_STRING"
 const TT_UNDEFINED /*        */ = "TT_UNDEFINED"
 const TT_VAR /*              */ = "TT_VAR"
@@ -220,7 +219,6 @@ const getToken = ({
 const lex = (sammyScript) => {
   const tokens = []
 
-  let prevCharType = CT_WHITESPACE
   let charAccumulator = []
   let tokenLineNumberStart = 1
   let tokenColumnNumberStart = 1
@@ -317,10 +315,12 @@ const lex = (sammyScript) => {
   )
 }
 
-const getAst = (tokens) => {}
+const getAst = (_tokens) => {}
 
+// eslint-disable-next-line no-unused-vars
 const astToJS = (ast) => {}
 
+// eslint-disable-next-line no-unused-vars
 const compile = (sammyScript) => {
   const tokens = lex(sammyScript)
   const ast = getAst(tokens)
