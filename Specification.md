@@ -127,11 +127,11 @@ some_func()
 ```
 # Single line
 
-if a === b, do_thing()
+if a == b, do_thing()
 
 # Block
 
-if a === b
+if a == b
   do_thing()
 endif
 ```
