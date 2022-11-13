@@ -11,6 +11,7 @@ const t = {
   TT_CURLY_CLOSE: /*      */ "TT_CURLY_CLOSE",
   TT_CURLY_OPEN: /*       */ "TT_CURLY_OPEN",
   TT_DOT: /*              */ "TT_DOT",
+  TT_ELSE: /*             */ "TT_ELSE",
   TT_FUNCTION: /*         */ "TT_FUNCTION",
   TT_IF: /*               */ "TT_IF",
   TT_NULL: /*             */ "TT_NULL",

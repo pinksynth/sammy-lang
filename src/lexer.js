@@ -1,6 +1,7 @@
 /* global console */
 const {
   characterTypes: {
+    CT_AMPERSAND,
     CT_BACKSLASH,
     CT_DOUBLE_QUOTE,
     CT_EQUALS,
@@ -12,6 +13,7 @@ const {
     CT_NUMBER,
     CT_PERCENT,
     CT_PERIOD,
+    CT_PIPE,
     CT_UNDERSCORE,
     CT_WHITESPACE,
   },
@@ -29,6 +31,7 @@ const {
   TT_CURLY_CLOSE,
   TT_CURLY_OPEN,
   TT_DOT,
+  TT_ELSE,
   TT_FUNCTION,
   TT_IF,
   TT_NULL,
@@ -53,8 +56,8 @@ const getToken = ({
   lineNumberEnd,
   lineNumberStart,
   multilineCommentMode,
-  numberMode,
   numberFloatingPointApplied,
+  numberMode,
   singleLineCommentMode,
   stringLiteralMode,
 }) => {
@@ -107,6 +110,12 @@ const getToken = ({
   if (latestCharType === CT_EQUALS && charType === CT_EQUALS) {
     return false
   }
+  if (latestCharType === CT_AMPERSAND && charType === CT_AMPERSAND) {
+    return false
+  }
+  if (latestCharType === CT_PIPE && charType === CT_PIPE) {
+    return false
+  }
 
   const value = charAccumulator.join("")
   TT_OBJECT_OPEN
@@ -119,6 +128,8 @@ const getToken = ({
     tokenType = TT_WEAK
   } else if (value === "if") {
     tokenType = TT_IF
+  } else if (value === "else") {
+    tokenType = TT_ELSE
   } else if (value === "function") {
     tokenType = TT_FUNCTION
   } else if (value === "true" || value === "false") {
@@ -162,7 +173,9 @@ const getToken = ({
     value === "-" ||
     value === "*" ||
     value === "/" ||
-    value === "%"
+    value === "%" ||
+    value === "||" ||
+    value === "&&"
   ) {
     tokenType = TT_OPERATOR_INFIX
   } else if (latestCharType === CT_IDENTIFIER) {

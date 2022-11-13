@@ -1,5 +1,6 @@
 // Character types
 const c = {
+  CT_AMPERSAND: /*        */ "CT_AMPERSAND",
   CT_ASTERISK: /*         */ "CT_ASTERISK",
   CT_BACKSLASH: /*        */ "CT_BACKSLASH",
   CT_COLON: /*            */ "CT_COLON",
@@ -17,6 +18,7 @@ const c = {
   CT_NUMBER: /*           */ "CT_NUMBER",
   CT_PERCENT: /*          */ "CT_PERCENT",
   CT_PERIOD: /*           */ "CT_PERIOD",
+  CT_PIPE: /*             */ "CT_PIPE",
   CT_PLUS_SIGN: /*        */ "CT_PLUS_SIGN",
   CT_RIGHT_BRACKET: /*    */ "CT_RIGHT_BRACKET",
   CT_RIGHT_CURLY: /*      */ "CT_RIGHT_CURLY",
@@ -29,6 +31,7 @@ const c = {
 const characterTypes = c
 
 const characterRanges = {
+  [c.CT_AMPERSAND]: /*         */ [["&"]],
   [c.CT_ASTERISK]: /*          */ [["*"]],
   [c.CT_BACKSLASH]: /*         */ [["\\"]],
   [c.CT_COLON]: /*             */ [[":"]],
@@ -49,6 +52,7 @@ const characterRanges = {
   [c.CT_NUMBER]: /*            */ [["0", "9"]],
   [c.CT_PERCENT]: /*           */ [["%"]],
   [c.CT_PERIOD]: /*            */ [["."]],
+  [c.CT_PIPE]: /*              */ [["|"]],
   [c.CT_PLUS_SIGN]: /*         */ [["+"]],
   [c.CT_RIGHT_BRACKET]: /*     */ [["]"]],
   [c.CT_RIGHT_CURLY]: /*       */ [["}"]],

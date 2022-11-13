@@ -21,6 +21,7 @@ const {
   TT_CURLY_OPEN,
   TT_CURLY_CLOSE,
   TT_IF,
+  TT_ELSE,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -50,6 +51,7 @@ const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
 const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
 const ST_IF_BODY /*                */ = "ST_IF_BODY"
 const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
+const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
 const ST_OBJECT /*                 */ = "ST_OBJECT"
 const ST_ROOT /*                   */ = "ST_ROOT"
 
@@ -115,14 +117,23 @@ const getAstFromTokens = (tokens) => {
     let currentExpressionList = node.children
     if (currentScope === ST_IF_CONDITION) {
       currentExpressionList = node.condition
+    } else if (currentScope === ST_IF_ELSE) {
+      currentExpressionList = node.else
     } else if (currentScope === ST_BINARY_OPERATOR) {
       currentExpressionList = node.right
+      if (currentExpressionList.length > 1) {
+        const prevToken = tokens[index - 1]
+        throw new Error(
+          `Unexpected token "${prevToken.value}" on line ${prevToken.lineNumberStart}`
+        )
+      }
     }
     console.log("scopes", scopes)
     console.log(token.value, tokenType)
 
+    // Function declaration args
     if (currentScope === ST_FUNCTION_DEC_ARGS) {
-      if (tokenType === TT_VAR) {
+      if (TT_TERMINALS.includes(tokenType)) {
         node.args.push(getNodeFromToken(token))
 
         continue
@@ -132,6 +143,7 @@ const getAstFromTokens = (tokens) => {
             `Unexpected token "${nextToken.value}" when defining a function on line ${token.lineNumberStart}`
           )
         }
+
         // When going from function declaration arguments to the body, we consume the closing paren and opening curly brace ") {", so increment the index by an extra 1.
         index++
 
@@ -147,6 +159,7 @@ const getAstFromTokens = (tokens) => {
       }
     }
 
+    // Move from if condition to if body
     if (currentScope === ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
       scopes.pop()
       scopes.push(ST_IF_BODY)
@@ -154,12 +167,14 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Opening of if statement
     if (tokenType === TT_IF) {
       scopes.push(ST_IF_CONDITION)
 
       const child = {
         condition: [],
         children: [],
+        else: [],
         parent: node,
         type: NT_IF_EXPR,
       }
@@ -169,6 +184,7 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Opening of function declaration
     if (tokenType === TT_FUNCTION && nextTokenType === TT_VAR) {
       if (thirdTokenType !== TT_PAREN_OPEN) {
         throw new Error(
@@ -192,6 +208,7 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Variable assignment
     if (tokenType === TT_VAR && nextTokenType === TT_ASSIGNMENT) {
       if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_ROOT].includes(currentScope)) {
         throw new Error(
@@ -273,9 +290,27 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // If else
+    if (
+      tokenType === TT_CURLY_CLOSE &&
+      nextTokenType === TT_ELSE &&
+      thirdTokenType === TT_CURLY_OPEN
+    ) {
+      scopes.pop()
+      scopes.push(ST_IF_ELSE)
+      // We are consuming the "if" body's closing curly, the "else" keyword, and the "else" opening curly, so increment by 2 extra tokens.
+
+      index++
+      index++
+
+      continue
+    }
+
     // Close a function or other block
     if (tokenType === TT_CURLY_CLOSE) {
-      if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY].includes(currentScope)) {
+      if (
+        ![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_IF_ELSE].includes(currentScope)
+      ) {
         throw new Error(
           `Unexpected closing brace "}" on line ${token.lineNumberStart}`
         )
@@ -331,7 +366,7 @@ const getAstFromTokens = (tokens) => {
           currentScope
         )
       ? '")"'
-      : [ST_IF_BODY, ST_FUNCTION_DEC_BODY].includes(currentScope)
+      : [ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_IF_ELSE].includes(currentScope)
       ? '"}"'
       : [ST_BINARY_OPERATOR, ST_ASSIGNMENT].includes(currentScope)
       ? "an expression"
