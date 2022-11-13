@@ -131,9 +131,18 @@ if a == b, do_thing()
 
 # Block
 
-if a == b
+if a == b {
   do_thing()
-endif
+}
+
+# Multiple conditions
+if
+	a == b
+	c()
+	d != f
+	{
+	do_thing()
+}
 ```
 
 ### Objects

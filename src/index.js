@@ -12,7 +12,10 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-if foo(8) {
-	a()
+if
+	a == b * y + g
+	f(1 2 3)
+{
+	f()
 }
 `)

@@ -44,6 +44,7 @@ const NT_TERNARY_EXPR /*           */ = "NT_TERNARY_EXPR"
 // Scope types
 const ST_ARRAY /*                  */ = "ST_ARRAY"
 const ST_ASSIGNMENT /*             */ = "ST_ASSIGNMENT"
+const ST_BINARY_OPERATOR /*        */ = "ST_BINARY_OPERATOR"
 const ST_FUNCTION_CALL_ARGS /*     */ = "ST_FUNCTION_CALL_ARGS"
 const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
 const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
@@ -89,10 +90,13 @@ const getAstFromTokens = (tokens) => {
   let node = ast
   const pop = () => {
     scopes.pop()
+    const currentScope = scopes[scopes.length - 1]
     const tmp = node
     node = node.parent
     delete tmp.parent
-    if (scopes[scopes.length - 1] === ST_ASSIGNMENT) pop()
+    if (currentScope === ST_ASSIGNMENT || currentScope === ST_BINARY_OPERATOR) {
+      pop()
+    }
   }
 
   tokens = tokens.filter(
@@ -100,6 +104,7 @@ const getAstFromTokens = (tokens) => {
   )
 
   for (let index = 0; index < tokens.length; index++) {
+    console.log("------------------")
     const token = tokens[index],
       tokenType = token.tokenType,
       nextToken = tokens[index + 1],
@@ -110,8 +115,9 @@ const getAstFromTokens = (tokens) => {
     let currentExpressionList = node.children
     if (currentScope === ST_IF_CONDITION) {
       currentExpressionList = node.condition
+    } else if (currentScope === ST_BINARY_OPERATOR) {
+      currentExpressionList = node.right
     }
-    console.log("------------------")
     console.log("scopes", scopes)
     console.log(token.value, tokenType)
 
@@ -279,14 +285,33 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Binary expressions
+    if (TT_BINARY_OPERATORS.includes(tokenType)) {
+      scopes.push(ST_BINARY_OPERATOR)
+
+      const leftOperand = currentExpressionList.pop()
+
+      const child = {
+        left: leftOperand,
+        operator: token.value,
+        parent: node,
+        right: [],
+        type: NT_BINARY_EXPR,
+      }
+      currentExpressionList.push(child)
+      node = child
+
+      continue
+    }
+
     // Terminals
-    if (
-      TT_TERMINALS.includes(tokenType) &&
-      !TT_BINARY_OPERATORS.includes(nextTokenType)
-    ) {
+    if (TT_TERMINALS.includes(tokenType)) {
       currentExpressionList.push(getNodeFromToken(token))
 
-      if (currentScope === ST_ASSIGNMENT) {
+      if (
+        currentScope === ST_ASSIGNMENT ||
+        currentScope === ST_BINARY_OPERATOR
+      ) {
         pop()
       }
 
@@ -301,15 +326,17 @@ const getAstFromTokens = (tokens) => {
   if (scopes.length > 1) {
     const currentScope = scopes[scopes.length - 1]
     const expectedToken = [ST_ARRAY, ST_OBJECT].includes(currentScope)
-      ? "]"
+      ? '"]"'
       : [ST_FUNCTION_DEC_ARGS, ST_FUNCTION_CALL_ARGS, ST_IF_CONDITION].includes(
           currentScope
         )
-      ? ")"
+      ? '")"'
       : [ST_IF_BODY, ST_FUNCTION_DEC_BODY].includes(currentScope)
-      ? "}"
+      ? '"}"'
+      : [ST_BINARY_OPERATOR, ST_ASSIGNMENT].includes(currentScope)
+      ? "an expression"
       : "(unknown)"
-    throw new Error(`Unexpected end of input. Expected "${expectedToken}".`)
+    throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
   }
 
   console.dir(ast, { depth: null })
