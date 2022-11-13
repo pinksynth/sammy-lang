@@ -12,18 +12,6 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-[
-	1
-	2
-	[
-		a
-		b
-		c(
-			x
-			y([] [i j])
-		)
-		3
-	]
-	4
-]
+foo = a(x() g)
+bar = b(y 2 [a b() c])
 `)

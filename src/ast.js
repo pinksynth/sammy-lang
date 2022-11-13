@@ -15,9 +15,12 @@ const {
   TT_UNDEFINED,
   TT_STRING,
   TT_PAREN_CLOSE,
+  TT_COMMENT,
+  TT_ASSIGNMENT,
 } = require("./tokenTypes")
 
 // AST Node Types
+const NT_ASSIGNMENT /*             */ = "NT_ASSIGNMENT"
 const NT_BINARY_EXPR /*            */ = "NT_BINARY_EXPR"
 const NT_DOT_ACCESS_EXPR /*        */ = "NT_DOT_ACCESS_EXPR"
 const NT_FUNCTION_CALL /*          */ = "NT_FUNCTION_CALL"
@@ -36,12 +39,14 @@ const NT_TERNARY_EXPR /*           */ = "NT_TERNARY_EXPR"
 
 // Scope types
 const ST_ARRAY /*                  */ = "ST_ARRAY"
+const ST_ASSIGNMENT /*             */ = "ST_ASSIGNMENT"
 const ST_FUNCTION_CALL_ARGS /*     */ = "ST_FUNCTION_CALL_ARGS"
 const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
 const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
 const ST_IF_BODY /*                */ = "ST_IF_BODY"
 const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
 const ST_OBJECT /*                 */ = "ST_OBJECT"
+const ST_ROOT /*                   */ = "ST_ROOT"
 
 const getNodeFromToken = ({ value, tokenType }) => {
   let type
@@ -75,8 +80,7 @@ const getNodeFromToken = ({ value, tokenType }) => {
 
 const getAstFromTokens = (tokens) => {
   const ast = { type: NT_ROOT, children: [] }
-  const scopes = []
-  tokens = tokens.filter((t) => t.tokenType !== TT_WHITESPACE)
+  const scopes = [ST_ROOT]
 
   let node = ast
   const pop = () => {
@@ -84,30 +88,75 @@ const getAstFromTokens = (tokens) => {
     const tmp = node
     node = node.parent
     delete tmp.parent
+    if (scopes[scopes.length - 1] === ST_ASSIGNMENT) pop()
   }
 
+  tokens = tokens.filter(
+    ({ tokenType: tt }) => tt !== TT_WHITESPACE && tt !== TT_COMMENT
+  )
+
   for (let index = 0; index < tokens.length; index++) {
-    const currentScope = scopes[scopes.length - 1]
-    console.log("---------")
     const token = tokens[index],
       tokenType = token.tokenType,
       nextToken = tokens[index + 1],
       nextTokenType = nextToken && nextToken.tokenType
+    const currentScope = scopes[scopes.length - 1]
+    console.log("------------------")
+    console.log("scopes", scopes)
     console.log(token.value, tokenType)
-    // console.log("node", node)
+
+    if (tokenType === TT_VAR && nextTokenType === TT_ASSIGNMENT) {
+      if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_ROOT].includes(currentScope)) {
+        throw new Error(
+          `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`
+        )
+      }
+
+      scopes.push(ST_ASSIGNMENT)
+      const child = {
+        children: [],
+        parent: node,
+        type: NT_ASSIGNMENT,
+        variable: token.value,
+      }
+      node.children.push(child)
+      node = child
+
+      // For normal var assignments, we have consumed both the identifier and the operator, so we'll manually increment the tokens by an extra 1.
+      index++
+
+      continue
+    }
+
+    // Function call
     if (tokenType === TT_VAR && nextTokenType === TT_PAREN_OPEN) {
       scopes.push(ST_FUNCTION_CALL_ARGS)
       const child = {
-        function: getNodeFromToken(token),
-        type: NT_FUNCTION_CALL,
-        parent: node,
         children: [],
+        function: getNodeFromToken(token),
+        parent: node,
+        type: NT_FUNCTION_CALL,
       }
+      node.children.push(child)
+      node = child
+
+      // For function calls, we have consumed both the function and the opening paren, so we'll manually increment the tokens by an extra 1.
+      index++
+
+      continue
+    }
+
+    // Array open
+    if (tokenType === TT_BRACKET_OPEN) {
+      scopes.push(ST_ARRAY)
+      const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
       node.children.push(child)
       node = child
 
       continue
     }
+
+    // Close paren
     if (tokenType === TT_PAREN_CLOSE) {
       if (
         ![
@@ -124,14 +173,8 @@ const getAstFromTokens = (tokens) => {
 
       continue
     }
-    if (tokenType === TT_BRACKET_OPEN) {
-      scopes.push(ST_ARRAY)
-      const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
-      node.children.push(child)
-      node = child
 
-      continue
-    }
+    // Close array or object
     if (tokenType === TT_BRACKET_CLOSE) {
       if (![ST_ARRAY, ST_OBJECT].includes(currentScope)) {
         throw new Error(
@@ -142,14 +185,24 @@ const getAstFromTokens = (tokens) => {
 
       continue
     }
+
+    // Terminals
     if (
       TT_TERMINALS.includes(tokenType) &&
       !TT_BINARY_OPERATORS.includes(nextTokenType)
     ) {
       node.children.push(getNodeFromToken(token))
 
+      if (currentScope === ST_ASSIGNMENT) {
+        pop()
+      }
+
       continue
     }
+
+    throw new Error(
+      `Unexpected token "${token.value}" on line ${token.lineNumberStart}`
+    )
   }
 
   console.dir(ast, { depth: null })
