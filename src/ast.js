@@ -14,6 +14,7 @@ const {
   TT_TERMINALS,
   TT_UNDEFINED,
   TT_STRING,
+  TT_PAREN_CLOSE,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -74,33 +75,80 @@ const getNodeFromToken = ({ value, tokenType }) => {
 
 const getAstFromTokens = (tokens) => {
   const ast = { type: NT_ROOT, children: [] }
+  const scopes = []
   tokens = tokens.filter((t) => t.tokenType !== TT_WHITESPACE)
 
   let node = ast
+  const pop = () => {
+    scopes.pop()
+    const tmp = node
+    node = node.parent
+    delete tmp.parent
+  }
 
   for (let index = 0; index < tokens.length; index++) {
+    const currentScope = scopes[scopes.length - 1]
     console.log("---------")
     const token = tokens[index],
       tokenType = token.tokenType,
       nextToken = tokens[index + 1],
       nextTokenType = nextToken && nextToken.tokenType
     console.log(token.value, tokenType)
-    console.log("node", node)
+    // console.log("node", node)
+    if (tokenType === TT_VAR && nextTokenType === TT_PAREN_OPEN) {
+      scopes.push(ST_FUNCTION_CALL_ARGS)
+      const child = {
+        function: getNodeFromToken(token),
+        type: NT_FUNCTION_CALL,
+        parent: node,
+        children: [],
+      }
+      node.children.push(child)
+      node = child
+
+      continue
+    }
+    if (tokenType === TT_PAREN_CLOSE) {
+      if (
+        ![
+          ST_FUNCTION_CALL_ARGS,
+          ST_IF_CONDITION,
+          ST_FUNCTION_DEC_ARGS,
+        ].includes(currentScope)
+      ) {
+        throw new Error(
+          `Unexpected closing bracket ")" on line ${token.lineNumberStart}`
+        )
+      }
+      pop()
+
+      continue
+    }
     if (tokenType === TT_BRACKET_OPEN) {
+      scopes.push(ST_ARRAY)
       const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
       node.children.push(child)
       node = child
+
+      continue
     }
     if (tokenType === TT_BRACKET_CLOSE) {
-      const tmp = node
-      node = node.parent
-      delete tmp.parent
+      if (![ST_ARRAY, ST_OBJECT].includes(currentScope)) {
+        throw new Error(
+          `Unexpected closing bracket "]" on line ${token.lineNumberStart}`
+        )
+      }
+      pop()
+
+      continue
     }
     if (
       TT_TERMINALS.includes(tokenType) &&
       !TT_BINARY_OPERATORS.includes(nextTokenType)
     ) {
       node.children.push(getNodeFromToken(token))
+
+      continue
     }
   }
 
