@@ -1,5 +1,5 @@
 // Token types
-module.exports = {
+const t = {
   TT_ASSIGNMENT: /*       */ "TT_ASSIGNMENT",
   TT_BOOLEAN: /*          */ "TT_BOOLEAN",
   TT_BRACKET_CLOSE: /*    */ "TT_BRACKET_CLOSE",
@@ -23,4 +23,15 @@ module.exports = {
   TT_VAR: /*              */ "TT_VAR",
   TT_WEAK: /*             */ "TT_WEAK",
   TT_WHITESPACE: /*       */ "TT_WHITESPACE",
+}
+
+module.exports = {
+  ...t,
+  TT_TERMINALS: [t.TT_BOOLEAN, t.TT_NULL, t.TT_NUMBER, t.TT_STRING, t.TT_VAR],
+  TT_BINARY_OPERATORS: [
+    t.TT_ASSIGNMENT,
+    t.TT_COMPARE,
+    t.TT_DOT,
+    t.TT_OPERATOR_INFIX,
+  ],
 }

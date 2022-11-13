@@ -298,7 +298,6 @@ const lex = (sammyScript) => {
     }
 
     charAccumulator.push(char)
-    if (token) console.log([token.value, token.tokenType])
   }
 
   tokens.push(
@@ -314,6 +313,8 @@ const lex = (sammyScript) => {
       stringLiteralMode,
     })
   )
+
+  return tokens
 }
 
 module.exports = lex
