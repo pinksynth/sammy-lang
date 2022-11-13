@@ -270,6 +270,20 @@ const getAstFromTokens = (tokens) => {
     )
   }
 
+  if (scopes.length > 1) {
+    const currentScope = scopes[scopes.length - 1]
+    const expectedToken = [ST_ARRAY, ST_OBJECT].includes(currentScope)
+      ? "]"
+      : [ST_FUNCTION_DEC_ARGS, ST_FUNCTION_CALL_ARGS, ST_IF_CONDITION].includes(
+          currentScope
+        )
+      ? ")"
+      : [ST_IF_BODY, ST_FUNCTION_DEC_BODY].includes(currentScope)
+      ? "}"
+      : "(unknown)"
+    throw new Error(`Unexpected end of input. Expected "${expectedToken}".`)
+  }
+
   console.dir(ast, { depth: null })
   return ast
 }
