@@ -11,7 +11,7 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-if a && b {
-	x()
+function my_func("c") {
+	%[a: 1, "b": [2 3], c: %[my: key]]
 }
 `)

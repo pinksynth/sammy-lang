@@ -22,6 +22,9 @@ const {
   TT_CURLY_CLOSE,
   TT_IF,
   TT_ELSE,
+  TT_OBJECT_OPEN,
+  TT_COMMA,
+  TT_COLON,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -52,7 +55,8 @@ const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
 const ST_IF_BODY /*                */ = "ST_IF_BODY"
 const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
 const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
-const ST_OBJECT /*                 */ = "ST_OBJECT"
+const ST_OBJECT_VALUE /*           */ = "ST_OBJECT_VALUE"
+const ST_OBJECT_KEY /*             */ = "ST_OBJECT_KEY"
 const ST_ROOT /*                   */ = "ST_ROOT"
 
 const getNodeFromToken = ({ value, tokenType }) => {
@@ -88,6 +92,7 @@ const getNodeFromToken = ({ value, tokenType }) => {
 const getAstFromTokens = (tokens) => {
   const ast = { type: NT_ROOT, children: [] }
   const scopes = [ST_ROOT]
+  let currentExpressionList
 
   let node = ast
   const pop = () => {
@@ -96,9 +101,15 @@ const getAstFromTokens = (tokens) => {
     const tmp = node
     node = node.parent
     delete tmp.parent
+
+    // For right-hand of assignment and binary operators, pop the stack until we reach the heighest unclosed scope.
     if (currentScope === ST_ASSIGNMENT || currentScope === ST_BINARY_OPERATOR) {
       pop()
     }
+  }
+  const swapScope = (newScope) => {
+    scopes.pop()
+    scopes.push(newScope)
   }
 
   tokens = tokens.filter(
@@ -114,9 +125,29 @@ const getAstFromTokens = (tokens) => {
       thirdToken = tokens[index + 2],
       thirdTokenType = thirdToken && thirdToken.tokenType
     const currentScope = scopes[scopes.length - 1]
-    let currentExpressionList = node.children
+    currentExpressionList = node.children
+
+    const pushToExpressionList = (childNode) => {
+      if (currentScope === ST_OBJECT_VALUE) {
+        if (node.keys.length === node.values.length + 1) {
+          currentExpressionList.push(childNode)
+
+          return
+        } else {
+          throw new Error(
+            `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
+          )
+        }
+      }
+      currentExpressionList.push(childNode)
+    }
+
     if (currentScope === ST_IF_CONDITION) {
       currentExpressionList = node.condition
+    } else if (currentScope === ST_OBJECT_KEY) {
+      currentExpressionList = node.keys
+    } else if (currentScope === ST_OBJECT_VALUE) {
+      currentExpressionList = node.values
     } else if (currentScope === ST_IF_ELSE) {
       currentExpressionList = node.else
     } else if (currentScope === ST_BINARY_OPERATOR) {
@@ -148,8 +179,7 @@ const getAstFromTokens = (tokens) => {
         index++
 
         // Note that unlike other things, our scope changes but the parent node (the function declaration) does not change.
-        scopes.pop()
-        scopes.push(ST_FUNCTION_DEC_BODY)
+        swapScope(ST_FUNCTION_DEC_BODY)
 
         continue
       } else {
@@ -161,8 +191,7 @@ const getAstFromTokens = (tokens) => {
 
     // Move from if condition to if body
     if (currentScope === ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
-      scopes.pop()
-      scopes.push(ST_IF_BODY)
+      swapScope(ST_IF_BODY)
 
       continue
     }
@@ -178,7 +207,7 @@ const getAstFromTokens = (tokens) => {
         parent: node,
         type: NT_IF_EXPR,
       }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       continue
@@ -198,12 +227,40 @@ const getAstFromTokens = (tokens) => {
         parent: node,
         type: NT_FUNCTION_DECLARATION,
       }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       // For named function declarations, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
       index++
       index++
+
+      continue
+    }
+
+    // Object key and
+    if (currentScope === ST_OBJECT_KEY) {
+      if (TT_TERMINALS.includes(tokenType)) {
+        if (nextTokenType === TT_COLON) {
+          pushToExpressionList(getNodeFromToken(token))
+          swapScope(ST_OBJECT_VALUE)
+          // We have consumed the key as well as the colon, so increment the tokens by an extra one.
+          index++
+
+          continue
+        } else {
+          throw new Error(
+            `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${token.lineNumberStart}`
+          )
+        }
+      } else if (tokenType === TT_BRACKET_CLOSE) {
+        pop()
+
+        continue
+      }
+    }
+
+    if (currentScope === ST_OBJECT_VALUE && tokenType === TT_COMMA) {
+      swapScope(ST_OBJECT_KEY)
 
       continue
     }
@@ -223,7 +280,7 @@ const getAstFromTokens = (tokens) => {
         type: NT_ASSIGNMENT,
         variable: token.value,
       }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       // For normal var assignments, we have consumed both the identifier and the operator, so we'll manually increment the tokens by an extra 1.
@@ -241,7 +298,7 @@ const getAstFromTokens = (tokens) => {
         parent: node,
         type: NT_FUNCTION_CALL,
       }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       // For function calls, we have consumed both the function and the opening paren, so we'll manually increment the tokens by an extra 1.
@@ -250,11 +307,27 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Object open
+    if (tokenType === TT_OBJECT_OPEN) {
+      scopes.push(ST_OBJECT_KEY)
+
+      const child = {
+        keys: [],
+        values: [],
+        parent: node,
+        type: NT_LITERAL_OBJECT,
+      }
+      pushToExpressionList(child)
+      node = child
+
+      continue
+    }
+
     // Array open
     if (tokenType === TT_BRACKET_OPEN) {
       scopes.push(ST_ARRAY)
       const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       continue
@@ -280,7 +353,7 @@ const getAstFromTokens = (tokens) => {
 
     // Close array or object
     if (tokenType === TT_BRACKET_CLOSE) {
-      if (![ST_ARRAY, ST_OBJECT].includes(currentScope)) {
+      if (![ST_ARRAY, ST_OBJECT_VALUE].includes(currentScope)) {
         throw new Error(
           `Unexpected closing bracket "]" on line ${token.lineNumberStart}`
         )
@@ -296,8 +369,7 @@ const getAstFromTokens = (tokens) => {
       nextTokenType === TT_ELSE &&
       thirdTokenType === TT_CURLY_OPEN
     ) {
-      scopes.pop()
-      scopes.push(ST_IF_ELSE)
+      swapScope(ST_IF_ELSE)
       // We are consuming the "if" body's closing curly, the "else" keyword, and the "else" opening curly, so increment by 2 extra tokens.
 
       index++
@@ -333,7 +405,7 @@ const getAstFromTokens = (tokens) => {
         right: [],
         type: NT_BINARY_EXPR,
       }
-      currentExpressionList.push(child)
+      pushToExpressionList(child)
       node = child
 
       continue
@@ -341,7 +413,7 @@ const getAstFromTokens = (tokens) => {
 
     // Terminals
     if (TT_TERMINALS.includes(tokenType)) {
-      currentExpressionList.push(getNodeFromToken(token))
+      pushToExpressionList(getNodeFromToken(token))
 
       if (
         currentScope === ST_ASSIGNMENT ||
@@ -354,13 +426,13 @@ const getAstFromTokens = (tokens) => {
     }
 
     throw new Error(
-      `Unexpected token "${token.value}" on line ${token.lineNumberStart}`
+      `Unexpected token "${token.value}" (${tokenType}) on line ${token.lineNumberStart}`
     )
   }
 
   if (scopes.length > 1) {
     const currentScope = scopes[scopes.length - 1]
-    const expectedToken = [ST_ARRAY, ST_OBJECT].includes(currentScope)
+    const expectedToken = [ST_ARRAY, ST_OBJECT_VALUE].includes(currentScope)
       ? '"]"'
       : [ST_FUNCTION_DEC_ARGS, ST_FUNCTION_CALL_ARGS, ST_IF_CONDITION].includes(
           currentScope
