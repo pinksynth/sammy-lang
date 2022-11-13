@@ -20,6 +20,7 @@ const {
   TT_FUNCTION,
   TT_CURLY_OPEN,
   TT_CURLY_CLOSE,
+  TT_IF,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -106,6 +107,10 @@ const getAstFromTokens = (tokens) => {
       thirdToken = tokens[index + 2],
       thirdTokenType = thirdToken && thirdToken.tokenType
     const currentScope = scopes[scopes.length - 1]
+    let currentExpressionList = node.children
+    if (currentScope === ST_IF_CONDITION) {
+      currentExpressionList = node.condition
+    }
     console.log("------------------")
     console.log("scopes", scopes)
     console.log(token.value, tokenType)
@@ -135,6 +140,29 @@ const getAstFromTokens = (tokens) => {
         )
       }
     }
+
+    if (currentScope === ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
+      scopes.pop()
+      scopes.push(ST_IF_BODY)
+
+      continue
+    }
+
+    if (tokenType === TT_IF) {
+      scopes.push(ST_IF_CONDITION)
+
+      const child = {
+        condition: [],
+        children: [],
+        parent: node,
+        type: NT_IF_EXPR,
+      }
+      currentExpressionList.push(child)
+      node = child
+
+      continue
+    }
+
     if (tokenType === TT_FUNCTION && nextTokenType === TT_VAR) {
       if (thirdTokenType !== TT_PAREN_OPEN) {
         throw new Error(
@@ -148,7 +176,7 @@ const getAstFromTokens = (tokens) => {
         parent: node,
         type: NT_FUNCTION_DECLARATION,
       }
-      node.children.push(child)
+      currentExpressionList.push(child)
       node = child
 
       // For named function declarations, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
@@ -172,7 +200,7 @@ const getAstFromTokens = (tokens) => {
         type: NT_ASSIGNMENT,
         variable: token.value,
       }
-      node.children.push(child)
+      currentExpressionList.push(child)
       node = child
 
       // For normal var assignments, we have consumed both the identifier and the operator, so we'll manually increment the tokens by an extra 1.
@@ -190,7 +218,7 @@ const getAstFromTokens = (tokens) => {
         parent: node,
         type: NT_FUNCTION_CALL,
       }
-      node.children.push(child)
+      currentExpressionList.push(child)
       node = child
 
       // For function calls, we have consumed both the function and the opening paren, so we'll manually increment the tokens by an extra 1.
@@ -203,7 +231,7 @@ const getAstFromTokens = (tokens) => {
     if (tokenType === TT_BRACKET_OPEN) {
       scopes.push(ST_ARRAY)
       const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
-      node.children.push(child)
+      currentExpressionList.push(child)
       node = child
 
       continue
@@ -256,7 +284,7 @@ const getAstFromTokens = (tokens) => {
       TT_TERMINALS.includes(tokenType) &&
       !TT_BINARY_OPERATORS.includes(nextTokenType)
     ) {
-      node.children.push(getNodeFromToken(token))
+      currentExpressionList.push(getNodeFromToken(token))
 
       if (currentScope === ST_ASSIGNMENT) {
         pop()

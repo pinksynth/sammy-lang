@@ -12,6 +12,7 @@ const t = {
   TT_CURLY_OPEN: /*       */ "TT_CURLY_OPEN",
   TT_DOT: /*              */ "TT_DOT",
   TT_FUNCTION: /*         */ "TT_FUNCTION",
+  TT_IF: /*               */ "TT_IF",
   TT_NULL: /*             */ "TT_NULL",
   TT_NUMBER: /*           */ "TT_NUMBER",
   TT_OBJECT_OPEN: /*      */ "TT_OBJECT_OPEN",

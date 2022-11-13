@@ -12,12 +12,7 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-function my_func(a b c) {
-	my_var = [
-		6
-		function other_func(x y z) {}
-		x
-	]
-	x
+if foo(8) {
+	a()
 }
 `)

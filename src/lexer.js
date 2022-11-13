@@ -30,6 +30,7 @@ const {
   TT_CURLY_OPEN,
   TT_DOT,
   TT_FUNCTION,
+  TT_IF,
   TT_NULL,
   TT_NUMBER,
   TT_OBJECT_OPEN,
@@ -116,6 +117,8 @@ const getToken = ({
     tokenType = TT_UNDEFINED
   } else if (value === "weak") {
     tokenType = TT_WEAK
+  } else if (value === "if") {
+    tokenType = TT_IF
   } else if (value === "function") {
     tokenType = TT_FUNCTION
   } else if (value === "true" || value === "false") {
