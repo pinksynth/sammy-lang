@@ -1,39 +1,37 @@
 /* global console */
 
 const {
-  TT_WHITESPACE,
-  TT_VAR,
-  TT_PAREN_OPEN,
-  TT_BRACKET_OPEN,
-  TT_NUMBER,
-  TT_BOOLEAN,
-  TT_NULL,
-  TT_BRACKET_CLOSE,
-  TT_OPERATOR_INFIX,
+  TT_ASSIGNMENT,
   TT_BINARY_OPERATORS,
+  TT_BOOLEAN,
+  TT_BRACKET_CLOSE,
+  TT_BRACKET_OPEN,
+  TT_COLON,
+  TT_COMMA,
+  TT_COMMENT,
+  TT_CURLY_CLOSE,
+  TT_CURLY_OPEN,
+  TT_ELSE,
+  TT_FUNCTION,
+  TT_IF,
+  TT_NULL,
+  TT_NUMBER,
+  TT_OBJECT_OPEN,
+  TT_PAREN_CLOSE,
+  TT_PAREN_OPEN,
+  TT_STRING,
   TT_TERMINALS,
   TT_UNDEFINED,
-  TT_STRING,
-  TT_PAREN_CLOSE,
-  TT_COMMENT,
-  TT_ASSIGNMENT,
-  TT_FUNCTION,
-  TT_CURLY_OPEN,
-  TT_CURLY_CLOSE,
-  TT_IF,
-  TT_ELSE,
-  TT_OBJECT_OPEN,
-  TT_COMMA,
-  TT_COLON,
+  TT_VAR,
+  TT_WHITESPACE,
 } = require("./tokenTypes")
 
 // AST Node Types
 const NT_ASSIGNMENT /*             */ = "NT_ASSIGNMENT"
 const NT_BINARY_EXPR /*            */ = "NT_BINARY_EXPR"
-const NT_DOT_ACCESS_EXPR /*        */ = "NT_DOT_ACCESS_EXPR"
 const NT_FUNCTION_CALL /*          */ = "NT_FUNCTION_CALL"
-const NT_FUNCTION_DECLARATION /*   */ = "NT_FUNCTION_DECLARATION"
 const NT_IDENTIFIER /*             */ = "NT_IDENTIFIER"
+const NT_GENERIC_EXPRESSION /*     */ = "NT_GENERIC_EXPRESSION"
 const NT_IF_EXPR /*                */ = "NT_IF_EXPR"
 const NT_LITERAL_ARRAY /*          */ = "NT_LITERAL_ARRAY"
 const NT_LITERAL_BOOLEAN /*        */ = "NT_LITERAL_BOOLEAN"
@@ -52,6 +50,7 @@ const ST_BINARY_OPERATOR /*        */ = "ST_BINARY_OPERATOR"
 const ST_FUNCTION_CALL_ARGS /*     */ = "ST_FUNCTION_CALL_ARGS"
 const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
 const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
+const ST_GENERIC_EXPRESSION /*     */ = "ST_GENERIC_EXPRESSION"
 const ST_IF_BODY /*                */ = "ST_IF_BODY"
 const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
 const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
@@ -90,6 +89,7 @@ const getNodeFromToken = ({ value, tokenType }) => {
 }
 
 const getAstFromTokens = (tokens) => {
+  console.log("tokens", tokens)
   const ast = { type: NT_ROOT, children: [] }
   const scopes = [ST_ROOT]
   let currentExpressionList
@@ -213,6 +213,32 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Object key and
+    if (currentScope === ST_OBJECT_KEY) {
+      if (TT_TERMINALS.includes(tokenType)) {
+        if (nextTokenType === TT_COLON) {
+          pushToExpressionList(getNodeFromToken(token))
+          swapScope(ST_OBJECT_VALUE)
+          // We have consumed the key as well as the colon, so increment the tokens by an extra one.
+          index++
+
+          continue
+        } else {
+          throw new Error(
+            `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${nextToken.lineNumberStart}`
+          )
+        }
+      } else if (tokenType === TT_BRACKET_CLOSE) {
+        pop()
+
+        continue
+      } else {
+        throw new Error(
+          `Syntax Error inside object literal. Unexpected token ${token.value} (${tokenType}) on line ${token.lineNumberStart}`
+        )
+      }
+    }
+
     // Opening of function declaration
     if (tokenType === TT_FUNCTION && nextTokenType === TT_VAR) {
       if (thirdTokenType !== TT_PAREN_OPEN) {
@@ -235,28 +261,6 @@ const getAstFromTokens = (tokens) => {
       index++
 
       continue
-    }
-
-    // Object key and
-    if (currentScope === ST_OBJECT_KEY) {
-      if (TT_TERMINALS.includes(tokenType)) {
-        if (nextTokenType === TT_COLON) {
-          pushToExpressionList(getNodeFromToken(token))
-          swapScope(ST_OBJECT_VALUE)
-          // We have consumed the key as well as the colon, so increment the tokens by an extra one.
-          index++
-
-          continue
-        } else {
-          throw new Error(
-            `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${token.lineNumberStart}`
-          )
-        }
-      } else if (tokenType === TT_BRACKET_CLOSE) {
-        pop()
-
-        continue
-      }
     }
 
     if (currentScope === ST_OBJECT_VALUE && tokenType === TT_COMMA) {
@@ -333,13 +337,24 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Open paren (expression group)
+    if (tokenType === TT_PAREN_OPEN) {
+      scopes.push(ST_GENERIC_EXPRESSION)
+      const child = { type: NT_GENERIC_EXPRESSION, parent: node, children: [] }
+      pushToExpressionList(child)
+      node = child
+
+      continue
+    }
+
     // Close paren
     if (tokenType === TT_PAREN_CLOSE) {
       if (
         ![
           ST_FUNCTION_CALL_ARGS,
-          ST_IF_CONDITION,
           ST_FUNCTION_DEC_ARGS,
+          ST_GENERIC_EXPRESSION,
+          ST_IF_CONDITION,
         ].includes(currentScope)
       ) {
         throw new Error(
@@ -434,9 +449,12 @@ const getAstFromTokens = (tokens) => {
     const currentScope = scopes[scopes.length - 1]
     const expectedToken = [ST_ARRAY, ST_OBJECT_VALUE].includes(currentScope)
       ? '"]"'
-      : [ST_FUNCTION_DEC_ARGS, ST_FUNCTION_CALL_ARGS, ST_IF_CONDITION].includes(
-          currentScope
-        )
+      : [
+          ST_FUNCTION_CALL_ARGS,
+          ST_FUNCTION_DEC_ARGS,
+          ST_GENERIC_EXPRESSION,
+          ST_IF_CONDITION,
+        ].includes(currentScope)
       ? '")"'
       : [ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_IF_ELSE].includes(currentScope)
       ? '"}"'

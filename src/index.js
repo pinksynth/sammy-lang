@@ -11,9 +11,5 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-@{foo($1)}
-
-@ a b c {
-
-}
+a * b - c / d
 `)
