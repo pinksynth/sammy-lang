@@ -12,6 +12,12 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-foo = a(x() g)
-bar = b(y 2 [a b() c])
+function my_func(a b c) {
+	my_var = [
+		6
+		function other_func(x y z) {}
+		x
+	]
+	x
+}
 `)

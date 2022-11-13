@@ -17,6 +17,9 @@ const {
   TT_PAREN_CLOSE,
   TT_COMMENT,
   TT_ASSIGNMENT,
+  TT_FUNCTION,
+  TT_CURLY_OPEN,
+  TT_CURLY_CLOSE,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -99,11 +102,61 @@ const getAstFromTokens = (tokens) => {
     const token = tokens[index],
       tokenType = token.tokenType,
       nextToken = tokens[index + 1],
-      nextTokenType = nextToken && nextToken.tokenType
+      nextTokenType = nextToken && nextToken.tokenType,
+      thirdToken = tokens[index + 2],
+      thirdTokenType = thirdToken && thirdToken.tokenType
     const currentScope = scopes[scopes.length - 1]
     console.log("------------------")
     console.log("scopes", scopes)
     console.log(token.value, tokenType)
+
+    if (currentScope === ST_FUNCTION_DEC_ARGS) {
+      if (tokenType === TT_VAR) {
+        node.args.push(getNodeFromToken(token))
+
+        continue
+      } else if (tokenType === TT_PAREN_CLOSE) {
+        if (nextTokenType !== TT_CURLY_OPEN) {
+          throw new Error(
+            `Unexpected token "${nextToken.value}" when defining a function on line ${token.lineNumberStart}`
+          )
+        }
+        // When going from function declaration arguments to the body, we consume the closing paren and opening curly brace ") {", so increment the index by an extra 1.
+        index++
+
+        // Note that unlike other things, our scope changes but the parent node (the function declaration) does not change.
+        scopes.pop()
+        scopes.push(ST_FUNCTION_DEC_BODY)
+
+        continue
+      } else {
+        throw new Error(
+          `Unexpected token "${nextToken.value}" when declaring function arguments on line ${token.lineNumberStart}`
+        )
+      }
+    }
+    if (tokenType === TT_FUNCTION && nextTokenType === TT_VAR) {
+      if (thirdTokenType !== TT_PAREN_OPEN) {
+        throw new Error(
+          `Syntax Error for function ${nextToken.value} on line ${token.lineNumberStart}`
+        )
+      }
+      scopes.push(ST_FUNCTION_DEC_ARGS)
+      const child = {
+        args: [],
+        children: [],
+        parent: node,
+        type: NT_FUNCTION_DECLARATION,
+      }
+      node.children.push(child)
+      node = child
+
+      // For named function declarations, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
+      index++
+      index++
+
+      continue
+    }
 
     if (tokenType === TT_VAR && nextTokenType === TT_ASSIGNMENT) {
       if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_ROOT].includes(currentScope)) {
@@ -179,6 +232,18 @@ const getAstFromTokens = (tokens) => {
       if (![ST_ARRAY, ST_OBJECT].includes(currentScope)) {
         throw new Error(
           `Unexpected closing bracket "]" on line ${token.lineNumberStart}`
+        )
+      }
+      pop()
+
+      continue
+    }
+
+    // Close a function or other block
+    if (tokenType === TT_CURLY_CLOSE) {
+      if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY].includes(currentScope)) {
+        throw new Error(
+          `Unexpected closing brace "}" on line ${token.lineNumberStart}`
         )
       }
       pop()
