@@ -3,6 +3,7 @@ const {
   characterTypes: {
     CT_AMPERSAND,
     CT_BACKSLASH,
+    CT_DOLLAR_SIGN,
     CT_DOUBLE_QUOTE,
     CT_EQUALS,
     CT_GREATER_THAN,
@@ -28,12 +29,14 @@ const {
   TT_COMMA,
   TT_COMMENT,
   TT_COMPARE,
+  TT_CONCISE_LAMBDA_ARGUMENT,
   TT_CURLY_CLOSE,
   TT_CURLY_OPEN,
   TT_DOT,
   TT_ELSE,
   TT_FUNCTION,
   TT_IF,
+  TT_LAMBDA_OPEN,
   TT_NULL,
   TT_NUMBER,
   TT_OBJECT_OPEN,
@@ -53,6 +56,7 @@ const getToken = ({
   columnNumberEnd,
   columnNumberStart,
   currentLineValue,
+  lambdaArgIdentifierMode,
   lineNumberEnd,
   lineNumberStart,
   multilineCommentMode,
@@ -89,6 +93,9 @@ const getToken = ({
   if (latestCharType === CT_IDENTIFIER && charType === CT_IDENTIFIER) {
     return false
   }
+  if (lambdaArgIdentifierMode && charType === CT_NUMBER) {
+    return false
+  }
   if (numberMode) {
     if (charType === CT_PERIOD && !numberFloatingPointApplied) {
       return false
@@ -118,7 +125,7 @@ const getToken = ({
   }
 
   const value = charAccumulator.join("")
-  TT_OBJECT_OPEN
+
   let tokenType
   if (value === "null") {
     tokenType = TT_NULL
@@ -136,12 +143,16 @@ const getToken = ({
     tokenType = TT_BOOLEAN
   } else if (value === "%[") {
     tokenType = TT_OBJECT_OPEN
+  } else if (value === "@") {
+    tokenType = TT_LAMBDA_OPEN
   } else if (value.substring(0, 3) === "<<<") {
     tokenType = TT_COMMENT
   } else if (value === "==") {
     tokenType = TT_COMPARE
   } else if (charTypeFrom(value[0]) === CT_DOUBLE_QUOTE) {
     tokenType = TT_STRING
+  } else if (charTypeFrom(value[0]) === CT_DOLLAR_SIGN) {
+    tokenType = TT_CONCISE_LAMBDA_ARGUMENT
   } else if (charTypeFrom(value[0]) === CT_HASH) {
     tokenType = TT_COMMENT
   } else if (latestCharType === CT_WHITESPACE) {
@@ -217,6 +228,7 @@ const lex = (sammyScript) => {
   let multilineCommentMode = false
   let numberMode = false
   let numberFloatingPointApplied = false
+  let lambdaArgIdentifierMode = false
 
   for (let index = 0; index < sammyScript.length; index++) {
     const char = sammyScript[index]
@@ -228,6 +240,7 @@ const lex = (sammyScript) => {
       columnNumberEnd: currentColumnNumber,
       columnNumberStart: tokenColumnNumberStart,
       currentLineValue,
+      lambdaArgIdentifierMode,
       lineNumberEnd: currentLineNumber,
       lineNumberStart: tokenLineNumberStart,
       multilineCommentMode,
@@ -242,6 +255,14 @@ const lex = (sammyScript) => {
       tokenLineNumberStart = currentLineNumber
       tokenColumnNumberStart = currentColumnNumber
       charAccumulator = []
+    }
+
+    if (lambdaArgIdentifierMode && charType !== CT_NUMBER) {
+      lambdaArgIdentifierMode = false
+    }
+
+    if (charAccumulator.length === 0 && charType === CT_DOLLAR_SIGN) {
+      lambdaArgIdentifierMode = true
     }
 
     if (charAccumulator.length === 0 && charType === CT_NUMBER) {
@@ -322,6 +343,7 @@ const lex = (sammyScript) => {
       columnNumberEnd: currentColumnNumber,
       columnNumberStart: tokenColumnNumberStart,
       currentLineValue,
+      lambdaArgIdentifierMode,
       lineNumberEnd: currentLineNumber,
       lineNumberStart: tokenLineNumberStart,
       numberFloatingPointApplied,

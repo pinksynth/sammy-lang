@@ -11,7 +11,9 @@ const compile = (sammyScript) => {
 }
 
 compile(`
-function my_func("c") {
-	%[a: 1, "b": [2 3], c: %[my: key]]
+@{foo($1)}
+
+@ a b c {
+
 }
 `)

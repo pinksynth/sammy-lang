@@ -90,24 +90,21 @@ do_math('multiply' 3 4)
 # -> 12
 ```
 
-#### Anonymous functions
+#### Lambda syntax
 
 ```
-function(arg1 arg2) {
-	arg1 + arg2
-}
-```
+# Single arity
+@ a { a * 2 }
 
-#### Concise syntax
-
-```
+# Concise version
 @{$1 * 2}
 
-# same as
 
-function(arg) {
-	arg * 2
-}
+# Multiple arity with named args
+@ a b { a * b }
+
+# Concise version
+@{$1 * $2}
 ```
 
 This syntax is useful for predicate functions and callbacks, e.g.:
