@@ -25,11 +25,13 @@ const {
   TT_VAR,
   TT_WHITESPACE,
   TT_LAMBDA_OPEN,
+  TT_CONCISE_LAMBDA_ARGUMENT,
 } = require("./tokenTypes")
 
 // AST Node Types
 const NT_ASSIGNMENT /*             */ = "NT_ASSIGNMENT"
 const NT_BINARY_EXPR /*            */ = "NT_BINARY_EXPR"
+const NT_CONCISE_LAMBDA_ARGUMENT /* */ = "NT_CONCISE_LAMBDA_ARGUMENT"
 const NT_FUNCTION_CALL /*          */ = "NT_FUNCTION_CALL"
 const NT_FUNCTION_DECLARATION /*   */ = "NT_FUNCTION_DECLARATION"
 const NT_IDENTIFIER /*             */ = "NT_IDENTIFIER"
@@ -104,6 +106,9 @@ const getNodeFromToken = ({ value, tokenType }) => {
       break
     case TT_VAR:
       type = NT_IDENTIFIER
+      break
+    case TT_CONCISE_LAMBDA_ARGUMENT:
+      type = NT_CONCISE_LAMBDA_ARGUMENT
       break
     default:
       throw new Error(`Invalid type ${tokenType}`)

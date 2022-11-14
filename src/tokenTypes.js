@@ -31,7 +31,14 @@ const t = {
 
 module.exports = {
   ...t,
-  TT_TERMINALS: [t.TT_BOOLEAN, t.TT_NULL, t.TT_NUMBER, t.TT_STRING, t.TT_VAR],
+  TT_TERMINALS: [
+    t.TT_BOOLEAN,
+    t.TT_CONCISE_LAMBDA_ARGUMENT,
+    t.TT_NULL,
+    t.TT_NUMBER,
+    t.TT_STRING,
+    t.TT_VAR,
+  ],
   TT_BINARY_OPERATORS: [
     t.TT_ASSIGNMENT,
     t.TT_COMPARE,
