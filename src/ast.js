@@ -119,7 +119,10 @@ const getNodeFromToken = ({ value, tokenType }) => {
   }
 }
 
-const getAstFromTokens = (tokens) => {
+const nullConsole = { log: () => {}, dir: () => {} }
+
+const getAstFromTokens = ({ tokens, debug }) => {
+  const debugConsole = debug ? console : nullConsole
   const ast = { type: NT_ROOT, children: [] }
   const scopes = [ST_ROOT]
   let currentExpressionList
@@ -147,7 +150,7 @@ const getAstFromTokens = (tokens) => {
   )
 
   for (let index = 0; index < tokens.length; index++) {
-    console.log("------------------")
+    debugConsole.log("------------------")
     const token = tokens[index],
       tokenType = token.tokenType,
       nextToken = tokens[index + 1],
@@ -191,8 +194,8 @@ const getAstFromTokens = (tokens) => {
       currentExpressionList.push(childNode)
     }
 
-    console.log("scopes", scopes)
-    console.log(token.value, tokenType)
+    debugConsole.log("scopes", scopes)
+    debugConsole.log(token.value, tokenType)
 
     // Function declaration args
     if (currentScope === ST_FUNCTION_DEC_ARGS) {
@@ -567,7 +570,7 @@ const getAstFromTokens = (tokens) => {
     throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
   }
 
-  console.dir(ast, { depth: null })
+  debugConsole.dir(ast, { depth: null })
   return ast
 }
 

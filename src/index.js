@@ -4,12 +4,28 @@ const lex = require("./lexer")
 // eslint-disable-next-line no-unused-vars
 const astToJS = (ast) => {}
 
-const compile = (sammyScript) => {
+const compiletoAST = ({ input: sammyScript, debug }) => {
   const tokens = lex(sammyScript)
-  const ast = getAstFromTokens(tokens)
-  return astToJS(ast)
+  return getAstFromTokens({ tokens, debug })
 }
 
-compile(`
-@{}
-`)
+compiletoAST({
+  input: `
+function my_func(a b) {
+	%[a: 1, "c": true, 55: [@{$1.flarn}]]
+}
+if foo == bar {
+	x()
+}
+if
+	a
+	b
+	c
+{
+	d()
+}
+`,
+  debug: true,
+})
+
+module.exports = { compiletoAST }
