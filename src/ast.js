@@ -24,6 +24,7 @@ const {
   TT_UNDEFINED,
   TT_VAR,
   TT_WHITESPACE,
+  TT_LAMBDA_OPEN,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -34,6 +35,7 @@ const NT_FUNCTION_DECLARATION /*   */ = "NT_FUNCTION_DECLARATION"
 const NT_IDENTIFIER /*             */ = "NT_IDENTIFIER"
 const NT_GENERIC_EXPRESSION /*     */ = "NT_GENERIC_EXPRESSION"
 const NT_IF_EXPR /*                */ = "NT_IF_EXPR"
+const NT_LAMBDA /*                 */ = "NT_LAMBDA"
 const NT_LITERAL_ARRAY /*          */ = "NT_LITERAL_ARRAY"
 const NT_LITERAL_BOOLEAN /*        */ = "NT_LITERAL_BOOLEAN"
 const NT_LITERAL_NULL /*           */ = "NT_LITERAL_NULL"
@@ -52,6 +54,8 @@ const ST_FUNCTION_CALL_ARGS /*     */ = "ST_FUNCTION_CALL_ARGS"
 const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
 const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
 const ST_GENERIC_EXPRESSION /*     */ = "ST_GENERIC_EXPRESSION"
+const ST_LAMBDA_ARGS /*            */ = "ST_LAMBDA_ARGS"
+const ST_LAMBDA_BODY /*            */ = "ST_LAMBDA_BODY"
 const ST_IF_BODY /*                */ = "ST_IF_BODY"
 const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
 const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
@@ -211,6 +215,24 @@ const getAstFromTokens = (tokens) => {
       }
     }
 
+    // Lambda args
+    if (currentScope === ST_LAMBDA_ARGS) {
+      if (TT_TERMINALS.includes(tokenType)) {
+        node.args.push(getNodeFromToken(token))
+
+        continue
+      } else if (tokenType === TT_CURLY_OPEN) {
+        // Note that unlike other things, our scope changes but the parent node (the lambda) does not change.
+        swapScope(ST_LAMBDA_BODY)
+
+        continue
+      } else {
+        throw new Error(
+          `Unexpected token "${token.value}" when defining a function on line ${token.lineNumberStart}`
+        )
+      }
+    }
+
     // Move from if condition to if body
     if (currentScope === ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
       swapScope(ST_IF_BODY)
@@ -228,6 +250,21 @@ const getAstFromTokens = (tokens) => {
         else: [],
         parent: node,
         type: NT_IF_EXPR,
+      }
+      pushToExpressionList(child)
+      node = child
+
+      continue
+    }
+
+    if (tokenType === TT_LAMBDA_OPEN) {
+      scopes.push(ST_LAMBDA_ARGS)
+
+      const child = {
+        args: [],
+        children: [],
+        parent: node,
+        type: NT_LAMBDA,
       }
       pushToExpressionList(child)
       node = child
@@ -418,7 +455,12 @@ const getAstFromTokens = (tokens) => {
     // Close a function or other block
     if (tokenType === TT_CURLY_CLOSE) {
       if (
-        ![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_IF_ELSE].includes(currentScope)
+        ![
+          ST_FUNCTION_DEC_BODY,
+          ST_IF_BODY,
+          ST_IF_ELSE,
+          ST_LAMBDA_BODY,
+        ].includes(currentScope)
       ) {
         throw new Error(
           `Unexpected closing brace "}" on line ${token.lineNumberStart}`
@@ -429,6 +471,7 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
+    // Binary operators
     if (TT_BINARY_OPERATORS.includes(tokenType)) {
       scopes.push(ST_BINARY_OPERATOR)
 
