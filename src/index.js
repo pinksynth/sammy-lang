@@ -10,6 +10,4 @@ const compile = (sammyScript) => {
   return astToJS(ast)
 }
 
-compile(`
-a * b - c / d
-`)
+compile(`1 / 2 + 3 - 4 * 5 + 6 - 7`)

@@ -30,6 +30,7 @@ const {
 const NT_ASSIGNMENT /*             */ = "NT_ASSIGNMENT"
 const NT_BINARY_EXPR /*            */ = "NT_BINARY_EXPR"
 const NT_FUNCTION_CALL /*          */ = "NT_FUNCTION_CALL"
+const NT_FUNCTION_DECLARATION /*   */ = "NT_FUNCTION_DECLARATION"
 const NT_IDENTIFIER /*             */ = "NT_IDENTIFIER"
 const NT_GENERIC_EXPRESSION /*     */ = "NT_GENERIC_EXPRESSION"
 const NT_IF_EXPR /*                */ = "NT_IF_EXPR"
@@ -57,6 +58,27 @@ const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
 const ST_OBJECT_VALUE /*           */ = "ST_OBJECT_VALUE"
 const ST_OBJECT_KEY /*             */ = "ST_OBJECT_KEY"
 const ST_ROOT /*                   */ = "ST_ROOT"
+
+const opPriority = (operator) => {
+  switch (operator) {
+    case ".":
+      return 0
+    case "^":
+      return -1
+    case "*":
+    case "/":
+      return -2
+    case "+":
+    case "-":
+      return -3
+    case "=":
+      return -4
+    case "==":
+      return -5
+    default:
+      throw new Error(`Could not determine precedence for operator ${operator}`)
+  }
+}
 
 const getNodeFromToken = ({ value, tokenType }) => {
   let type
@@ -89,7 +111,6 @@ const getNodeFromToken = ({ value, tokenType }) => {
 }
 
 const getAstFromTokens = (tokens) => {
-  console.log("tokens", tokens)
   const ast = { type: NT_ROOT, children: [] }
   const scopes = [ST_ROOT]
   let currentExpressionList
@@ -127,21 +148,6 @@ const getAstFromTokens = (tokens) => {
     const currentScope = scopes[scopes.length - 1]
     currentExpressionList = node.children
 
-    const pushToExpressionList = (childNode) => {
-      if (currentScope === ST_OBJECT_VALUE) {
-        if (node.keys.length === node.values.length + 1) {
-          currentExpressionList.push(childNode)
-
-          return
-        } else {
-          throw new Error(
-            `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
-          )
-        }
-      }
-      currentExpressionList.push(childNode)
-    }
-
     if (currentScope === ST_IF_CONDITION) {
       currentExpressionList = node.condition
     } else if (currentScope === ST_OBJECT_KEY) {
@@ -159,6 +165,22 @@ const getAstFromTokens = (tokens) => {
         )
       }
     }
+
+    const pushToExpressionList = (childNode) => {
+      if (currentScope === ST_OBJECT_VALUE) {
+        if (node.keys.length === node.values.length + 1) {
+          currentExpressionList.push(childNode)
+
+          return
+        } else {
+          throw new Error(
+            `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
+          )
+        }
+      }
+      currentExpressionList.push(childNode)
+    }
+
     console.log("scopes", scopes)
     console.log(token.value, tokenType)
 
@@ -407,23 +429,58 @@ const getAstFromTokens = (tokens) => {
       continue
     }
 
-    // Binary expressions
     if (TT_BINARY_OPERATORS.includes(tokenType)) {
       scopes.push(ST_BINARY_OPERATOR)
 
       const leftOperand = currentExpressionList.pop()
 
-      const child = {
-        left: leftOperand,
-        operator: token.value,
-        parent: node,
-        right: [],
-        type: NT_BINARY_EXPR,
-      }
-      pushToExpressionList(child)
-      node = child
+      // Here we do some swapping to handle operator precedence.
+      // That is, we check to see if we found 2 + 3 * 4.
+      // The algorithm wants this to be ((2 + 3) * 4).
+      // So we have to tell it to be (2 + (3 * 4)).
+      // In order to do this, we take the left operand ((2 + 3)) and check if it is a boolean expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
+      if (
+        leftOperand.type === NT_BINARY_EXPR &&
+        opPriority(leftOperand.operator) < opPriority(token.value)
+      ) {
+        const parentLeft = leftOperand.left
+        const childLeft = leftOperand.right
+        const parentOperator = leftOperand.operator
 
-      continue
+        const replacedParent = {
+          left: parentLeft,
+          operator: parentOperator,
+          parent: node,
+          right: [],
+          type: NT_BINARY_EXPR,
+        }
+        const rightChild = {
+          left: childLeft,
+          operator: token.value,
+          parent: replacedParent,
+          right: [],
+        }
+
+        scopes.push(ST_BINARY_OPERATOR)
+        replacedParent.right.push(rightChild)
+        pushToExpressionList(replacedParent)
+
+        node = rightChild
+
+        continue
+      } else {
+        const child = {
+          left: leftOperand,
+          operator: token.value,
+          parent: node,
+          right: [],
+          type: NT_BINARY_EXPR,
+        }
+        pushToExpressionList(child)
+        node = child
+
+        continue
+      }
     }
 
     // Terminals

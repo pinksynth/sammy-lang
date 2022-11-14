@@ -185,6 +185,7 @@ const getToken = ({
     value === "*" ||
     value === "/" ||
     value === "%" ||
+    value === "^" ||
     value === "||" ||
     value === "&&"
   ) {
