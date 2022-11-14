@@ -203,6 +203,15 @@ const getAstFromTokens = ({ tokens, debug }) => {
     debugConsole.log("scopes", scopes)
     debugConsole.log(token.value, tokenType)
 
+    // Right side of "dot" can only be identifier
+    if (node.type === nt.NT_BINARY_EXPR && node.operator === ".") {
+      if (tokenType !== TT_VAR) {
+        throw new Error(
+          `Syntax error on line ${token.lineNumberStart}. Unexpected token "${token.value}"`
+        )
+      }
+    }
+
     // Function declaration args
     if (currentScope === st.ST_FUNCTION_DEC_ARGS) {
       if (TT_TERMINALS.includes(tokenType)) {

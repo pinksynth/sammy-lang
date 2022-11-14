@@ -10,32 +10,25 @@ const compiletoAST = ({ input, debug }) => {
   return getAstFromTokens({ tokens, debug })
 }
 
-const compile = ({ input, debug }) => {
+const compile = ({ input, debug, jsGlobals }) => {
   const ast = compiletoAST({ input, debug })
-  return jsCompile({ ast, debug })
+  return jsCompile({ ast, debug, jsGlobals })
 }
 
 // compile({ input: `[@{b = $1.flarn}]` })
 compile({
   input: `
-function my_func(a b) {
-	%[a: 1, "c": a, 55: [@{b = $1.flarn}]]
-}
-foo = 1
-bar = 1
-x = @ a { console.log(a) }
-if foo == bar {
-	x()
-}
-if
-	foo
-	bar
-{
-	x(1 2)
-} else {
-	my_func(foo bar)
+y = @{ console.log() }
+function my_func (x) {
+	if x == 0 {
+		y()
+		true
+	} else {
+		my_func(x - 1)
+	}
 }
 `,
+  jsGlobals: ["console"],
 })
 
 module.exports = { compile, compiletoAST }

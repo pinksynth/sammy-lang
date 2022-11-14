@@ -1,26 +1,30 @@
+/* global console */
 const {
-  NT_ROOT,
-  NT_FUNCTION_DECLARATION,
-  NT_IDENTIFIER,
-  NT_LITERAL_OBJECT,
-  NT_LITERAL_BOOLEAN,
-  NT_LITERAL_UNDEFINED,
-  NT_LITERAL_NULL,
-  NT_LITERAL_ARRAY,
-  NT_LITERAL_NUMBER,
-  NT_LAMBDA,
+  NT_ASSIGNMENT,
   NT_BINARY_EXPR,
   NT_CONCISE_LAMBDA_ARGUMENT,
-  NT_IF_EXPR,
   NT_FUNCTION_CALL,
-  NT_ASSIGNMENT,
+  NT_FUNCTION_DECLARATION,
+  NT_IDENTIFIER,
+  NT_IF_EXPR,
+  NT_LAMBDA,
+  NT_LITERAL_ARRAY,
+  NT_LITERAL_BOOLEAN,
+  NT_LITERAL_NULL,
+  NT_LITERAL_NUMBER,
+  NT_LITERAL_OBJECT,
   NT_LITERAL_STRING,
+  NT_LITERAL_UNDEFINED,
+  NT_ROOT,
 } = require("./ast")
+
 const { nullConsole } = require("./debug")
+
+let debugConsole
 
 // As we iterate through expressions in a block scope, if those expressions are assignment expressions, we must make them available to subsequent siblings.
 const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
-  console.log("Mapping")
+  debugConsole.log("Mapping")
   if (nodes.length === 0) return ""
   const thisBlockVars = {
     lets: [...varsInScope.lets],
@@ -30,6 +34,8 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   for (const node of nodes) {
     if (node.type === NT_ASSIGNMENT) {
       thisBlockVars.consts.push(node.variable)
+    } else if (node.type === NT_FUNCTION_DECLARATION) {
+      thisBlockVars.lets.push(node.name)
     }
     childStrings.push(walkNode({ node, varsInScope: thisBlockVars }))
   }
@@ -48,13 +54,15 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   return childStrings.join(";")
 }
 
-const initVarsInScope = { lets: [], consts: [] }
-
 const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })
 
-const walkNode = ({ node, varsInScope = initVarsInScope }) => {
-  console.log("--------------------------")
-  console.log("node", node)
+const inScope = (theVar, varsInScope) =>
+  varsInScope.lets.includes(theVar) || varsInScope.consts.includes(theVar)
+
+const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
+  debugConsole.log("--------------------------")
+  debugConsole.log("node", node)
+  debugConsole.log("varsInScope", varsInScope)
   switch (node.type) {
     case NT_ROOT:
       return mapBlockScope({
@@ -63,18 +71,33 @@ const walkNode = ({ node, varsInScope = initVarsInScope }) => {
         assignmentStr: "",
       })
 
-    case NT_FUNCTION_DECLARATION:
+    case NT_FUNCTION_DECLARATION: {
+      // Make function arguments available the function body, and treat them as `const` so they may not be overridden.
+      const consts = [...varsInScope.consts]
+      for (const { type, value } of node.args) {
+        if (type === NT_IDENTIFIER) {
+          consts.push(value)
+        }
+      }
       return `function ${node.name}(${node.args
         .map(walkAssumedPrimitive)
         .join(",")}){${mapBlockScope({
         nodes: node.children,
-        varsInScope,
+        varsInScope: { ...varsInScope, consts },
       })}}`
+    }
 
-    case NT_FUNCTION_CALL:
+    case NT_FUNCTION_CALL: {
+      const functionName = node.function.value
+      if (!isPropertyAccess && !inScope(functionName, varsInScope)) {
+        throw new Error(
+          `Function ${functionName} is not defined in the current scope.`
+        )
+      }
       return `${node.function.value}(${node.children
-        .map(walkAssumedPrimitive)
+        .map((node) => walkNode({ node, varsInScope }))
         .join(",")})`
+    }
 
     case NT_IF_EXPR: {
       let statements = `if(${node.condition
@@ -112,7 +135,11 @@ const walkNode = ({ node, varsInScope = initVarsInScope }) => {
 
     case NT_BINARY_EXPR: {
       const left = walkNode({ node: node.left, varsInScope })
-      const right = walkNode({ node: node.right, varsInScope })
+      const right = walkNode({
+        node: node.right,
+        varsInScope,
+        isPropertyAccess: node.operator === ".",
+      })
       let jsOperator
 
       switch (node.operator) {
@@ -162,8 +189,13 @@ const walkNode = ({ node, varsInScope = initVarsInScope }) => {
     case NT_LITERAL_STRING:
     case NT_LITERAL_UNDEFINED: {
       // Raise errors if attempting to use variables that have not been defined.
-      // if (node.type === NT_IDENTIFIER) {
-      // }
+      if (node.type === NT_IDENTIFIER && varsInScope) {
+        if (!isPropertyAccess && !inScope(node.value, varsInScope)) {
+          throw new Error(
+            `Variable ${node.value} is not defined in the current scope.`
+          )
+        }
+      }
       return node.value
     }
 
@@ -172,11 +204,14 @@ const walkNode = ({ node, varsInScope = initVarsInScope }) => {
   }
 }
 
-const jsCompile = ({ ast, debug }) => {
-  // const debugConsole = debug ? console : nullConsole
-  console.dir(["ast", ast], { depth: null })
-  const result = walkNode({ node: ast })
-  console.log("result:\n", result)
+const jsCompile = ({ ast, debug, jsGlobals }) => {
+  debugConsole = debug ? console : nullConsole
+  debugConsole.dir(["ast", ast], { depth: null })
+  const result = walkNode({
+    node: ast,
+    varsInScope: { lets: [], consts: [...jsGlobals] },
+  })
+  debugConsole.log("result:\n", result)
   return result
 }
 
