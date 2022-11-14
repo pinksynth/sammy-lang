@@ -1,6 +1,7 @@
 // Token types
 const t = {
   TT_ASSIGNMENT: /*               */ "TT_ASSIGNMENT",
+  TT_BANG: /*                     */ "TT_BANG",
   TT_BOOLEAN: /*                  */ "TT_BOOLEAN",
   TT_BRACKET_CLOSE: /*            */ "TT_BRACKET_CLOSE",
   TT_BRACKET_OPEN: /*             */ "TT_BRACKET_OPEN",
@@ -45,4 +46,10 @@ module.exports = {
     t.TT_DOT,
     t.TT_OPERATOR_INFIX,
   ],
+  //
+  //
+  // FIXME: SAMMY! Some tokens, such as "-", can be binary or unary operators depending on their context. I think that the only context necessary is to determine whether there is a left sibling node.
+  //
+  //
+  TT_UNARY_OPERATORS: [t.TT_BANG],
 }

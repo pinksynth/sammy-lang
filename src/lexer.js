@@ -23,6 +23,7 @@ const {
 const charTypeFrom = require("./charTypeFrom")
 const {
   TT_ASSIGNMENT,
+  TT_BANG,
   TT_BOOLEAN,
   TT_BRACKET_CLOSE,
   TT_BRACKET_OPEN,
@@ -158,6 +159,7 @@ const getToken = ({
     tokenType = TT_COMMENT
   } else if (
     value === "==" ||
+    value === "!=" ||
     value === ">" ||
     value === "<" ||
     value === ">=" ||
@@ -194,6 +196,8 @@ const getToken = ({
     tokenType = TT_CURLY_OPEN
   } else if (value === "}") {
     tokenType = TT_CURLY_CLOSE
+  } else if (value === "!") {
+    tokenType = TT_BANG
   } else if (
     value === "+" ||
     value === "-" ||

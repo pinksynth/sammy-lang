@@ -17,6 +17,7 @@ const {
   NT_LITERAL_UNDEFINED,
   NT_ROOT,
   NT_GENERIC_EXPRESSION,
+  NT_UNARY_EXPRESSION,
 } = require("./ast")
 
 const { nullConsole } = require("./debug")
@@ -133,6 +134,10 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return `[${node.children
         .map((node) => walkNode({ node, varsInScope }))
         .join(",")}]`
+
+    case NT_UNARY_EXPRESSION: {
+      return `${node.operator}${walkNode({ node: node.operand, varsInScope })}`
+    }
 
     case NT_BINARY_EXPR: {
       const left = walkNode({ node: node.left, varsInScope })

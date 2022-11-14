@@ -127,7 +127,7 @@ const ast = {
                     type: "NT_BINARY_EXPR",
                     right: { type: "NT_LITERAL_NUMBER", value: "2" },
                   },
-                  operator: "==",
+                  operator: "!=",
                   type: "NT_BINARY_EXPR",
                   right: { type: "NT_LITERAL_NUMBER", value: "0" },
                 },

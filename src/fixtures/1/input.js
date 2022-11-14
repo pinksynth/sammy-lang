@@ -29,7 +29,7 @@ divide = @{ $1 / $2 }
 
 # It is very useful in map callbacks and predicate functions
 [1 2 3 4 5 6 7 8 9 10]
-	.filter(@{ $1 % 2 == 0 })
+	.filter(@{ $1 % 2 != 0 })
 	.map(@{ $1 * 100 })
 
 # If statements are treated as expressions and always return a value

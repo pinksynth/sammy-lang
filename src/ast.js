@@ -10,11 +10,13 @@ const {
   TT_COLON,
   TT_COMMA,
   TT_COMMENT,
+  TT_CONCISE_LAMBDA_ARGUMENT,
   TT_CURLY_CLOSE,
   TT_CURLY_OPEN,
   TT_ELSE,
   TT_FUNCTION,
   TT_IF,
+  TT_LAMBDA_OPEN,
   TT_NULL,
   TT_NUMBER,
   TT_OBJECT_OPEN,
@@ -22,11 +24,10 @@ const {
   TT_PAREN_OPEN,
   TT_STRING,
   TT_TERMINALS,
+  TT_UNARY_OPERATORS,
   TT_UNDEFINED,
   TT_VAR,
   TT_WHITESPACE,
-  TT_LAMBDA_OPEN,
-  TT_CONCISE_LAMBDA_ARGUMENT,
 } = require("./tokenTypes")
 
 // AST Node Types
@@ -36,8 +37,8 @@ const nt = {
   NT_CONCISE_LAMBDA_ARGUMENT: /* */ "NT_CONCISE_LAMBDA_ARGUMENT",
   NT_FUNCTION_CALL: /*           */ "NT_FUNCTION_CALL",
   NT_FUNCTION_DECLARATION: /*    */ "NT_FUNCTION_DECLARATION",
-  NT_IDENTIFIER: /*              */ "NT_IDENTIFIER",
   NT_GENERIC_EXPRESSION: /*      */ "NT_GENERIC_EXPRESSION",
+  NT_IDENTIFIER: /*              */ "NT_IDENTIFIER",
   NT_IF_EXPR: /*                 */ "NT_IF_EXPR",
   NT_LAMBDA: /*                  */ "NT_LAMBDA",
   NT_LITERAL_ARRAY: /*           */ "NT_LITERAL_ARRAY",
@@ -49,6 +50,7 @@ const nt = {
   NT_LITERAL_UNDEFINED: /*       */ "NT_LITERAL_UNDEFINED",
   NT_ROOT: /*                    */ "NT_ROOT",
   NT_TERNARY_EXPR: /*            */ "NT_TERNARY_EXPR",
+  NT_UNARY_EXPRESSION: /*        */ "NT_UNARY_EXPRESSION",
 }
 
 // Scope types
@@ -60,14 +62,15 @@ const st = {
   ST_FUNCTION_DEC_ARGS: /*       */ "ST_FUNCTION_DEC_ARGS",
   ST_FUNCTION_DEC_BODY: /*       */ "ST_FUNCTION_DEC_BODY",
   ST_GENERIC_EXPRESSION: /*      */ "ST_GENERIC_EXPRESSION",
-  ST_LAMBDA_ARGS: /*             */ "ST_LAMBDA_ARGS",
-  ST_LAMBDA_BODY: /*             */ "ST_LAMBDA_BODY",
   ST_IF_BODY: /*                 */ "ST_IF_BODY",
   ST_IF_CONDITION: /*            */ "ST_IF_CONDITION",
   ST_IF_ELSE: /*                 */ "ST_IF_ELSE",
-  ST_OBJECT_VALUE: /*            */ "ST_OBJECT_VALUE",
+  ST_LAMBDA_ARGS: /*             */ "ST_LAMBDA_ARGS",
+  ST_LAMBDA_BODY: /*             */ "ST_LAMBDA_BODY",
   ST_OBJECT_KEY: /*              */ "ST_OBJECT_KEY",
+  ST_OBJECT_VALUE: /*            */ "ST_OBJECT_VALUE",
   ST_ROOT: /*                    */ "ST_ROOT",
+  ST_UNARY_OPERATOR: /*          */ "ST_UNARY_OPERATOR",
 }
 
 const opPriority = (operator) => {
@@ -155,6 +158,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // For right-hand of assignment and binary operators, pop the stack until we reach the heighest unclosed scope.
     if (
       currentScope === st.ST_ASSIGNMENT ||
+      currentScope === st.ST_UNARY_OPERATOR ||
       currentScope === st.ST_BINARY_OPERATOR
     ) {
       pop()
@@ -190,6 +194,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
       currentExpressionList = node.else
     } else if (currentScope === st.ST_BINARY_OPERATOR) {
       currentExpressionList = undefined
+    } else if (currentScope === st.ST_UNARY_OPERATOR) {
+      currentExpressionList = undefined
     }
 
     const pushToExpressionList = (childNode) => {
@@ -207,6 +213,10 @@ const getAstFromTokens = ({ tokens, debug }) => {
         // For binary operators, we do not push to a list but instead just define the right operand.
       } else if (currentScope === st.ST_BINARY_OPERATOR) {
         node.right = childNode
+
+        return
+      } else if (currentScope === st.ST_UNARY_OPERATOR) {
+        node.operand = childNode
 
         return
       }
@@ -597,12 +607,28 @@ const getAstFromTokens = ({ tokens, debug }) => {
       }
     }
 
+    // Unary operators, such as !
+    if (TT_UNARY_OPERATORS.includes(tokenType)) {
+      scopes.push(st.ST_UNARY_OPERATOR)
+
+      const child = {
+        operator: token.value,
+        parent: node,
+        type: nt.NT_UNARY_EXPRESSION,
+      }
+      pushToExpressionList(child)
+      node = child
+
+      continue
+    }
+
     // Terminals
     if (TT_TERMINALS.includes(tokenType)) {
       pushToExpressionList(getNodeFromToken(token))
 
       if (
         currentScope === st.ST_ASSIGNMENT ||
+        currentScope === st.ST_UNARY_OPERATOR ||
         currentScope === st.ST_BINARY_OPERATOR
       ) {
         pop()
@@ -633,7 +659,11 @@ const getAstFromTokens = ({ tokens, debug }) => {
           currentScope
         )
       ? '"}"'
-      : [st.ST_BINARY_OPERATOR, st.ST_ASSIGNMENT].includes(currentScope)
+      : [
+          st.ST_UNARY_OPERATOR,
+          st.ST_BINARY_OPERATOR,
+          st.ST_ASSIGNMENT,
+        ].includes(currentScope)
       ? "an expression"
       : "(unknown)"
     throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
