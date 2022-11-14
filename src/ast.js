@@ -29,41 +29,41 @@ const {
 } = require("./tokenTypes")
 
 // AST Node Types
-const NT_ASSIGNMENT /*             */ = "NT_ASSIGNMENT"
-const NT_BINARY_EXPR /*            */ = "NT_BINARY_EXPR"
+const NT_ASSIGNMENT /*              */ = "NT_ASSIGNMENT"
+const NT_BINARY_EXPR /*             */ = "NT_BINARY_EXPR"
 const NT_CONCISE_LAMBDA_ARGUMENT /* */ = "NT_CONCISE_LAMBDA_ARGUMENT"
-const NT_FUNCTION_CALL /*          */ = "NT_FUNCTION_CALL"
-const NT_FUNCTION_DECLARATION /*   */ = "NT_FUNCTION_DECLARATION"
-const NT_IDENTIFIER /*             */ = "NT_IDENTIFIER"
-const NT_GENERIC_EXPRESSION /*     */ = "NT_GENERIC_EXPRESSION"
-const NT_IF_EXPR /*                */ = "NT_IF_EXPR"
-const NT_LAMBDA /*                 */ = "NT_LAMBDA"
-const NT_LITERAL_ARRAY /*          */ = "NT_LITERAL_ARRAY"
-const NT_LITERAL_BOOLEAN /*        */ = "NT_LITERAL_BOOLEAN"
-const NT_LITERAL_NULL /*           */ = "NT_LITERAL_NULL"
-const NT_LITERAL_NUMBER /*         */ = "NT_LITERAL_NUMBER"
-const NT_LITERAL_OBJECT /*         */ = "NT_LITERAL_OBJECT"
-const NT_LITERAL_STRING /*         */ = "NT_LITERAL_STRING"
-const NT_LITERAL_UNDEFINED /*      */ = "NT_LITERAL_UNDEFINED"
-const NT_ROOT /*                   */ = "NT_ROOT"
-const NT_TERNARY_EXPR /*           */ = "NT_TERNARY_EXPR"
+const NT_FUNCTION_CALL /*           */ = "NT_FUNCTION_CALL"
+const NT_FUNCTION_DECLARATION /*    */ = "NT_FUNCTION_DECLARATION"
+const NT_IDENTIFIER /*              */ = "NT_IDENTIFIER"
+const NT_GENERIC_EXPRESSION /*      */ = "NT_GENERIC_EXPRESSION"
+const NT_IF_EXPR /*                 */ = "NT_IF_EXPR"
+const NT_LAMBDA /*                  */ = "NT_LAMBDA"
+const NT_LITERAL_ARRAY /*           */ = "NT_LITERAL_ARRAY"
+const NT_LITERAL_BOOLEAN /*         */ = "NT_LITERAL_BOOLEAN"
+const NT_LITERAL_NULL /*            */ = "NT_LITERAL_NULL"
+const NT_LITERAL_NUMBER /*          */ = "NT_LITERAL_NUMBER"
+const NT_LITERAL_OBJECT /*          */ = "NT_LITERAL_OBJECT"
+const NT_LITERAL_STRING /*          */ = "NT_LITERAL_STRING"
+const NT_LITERAL_UNDEFINED /*       */ = "NT_LITERAL_UNDEFINED"
+const NT_ROOT /*                    */ = "NT_ROOT"
+const NT_TERNARY_EXPR /*            */ = "NT_TERNARY_EXPR"
 
 // Scope types
-const ST_ARRAY /*                  */ = "ST_ARRAY"
-const ST_ASSIGNMENT /*             */ = "ST_ASSIGNMENT"
-const ST_BINARY_OPERATOR /*        */ = "ST_BINARY_OPERATOR"
-const ST_FUNCTION_CALL_ARGS /*     */ = "ST_FUNCTION_CALL_ARGS"
-const ST_FUNCTION_DEC_ARGS /*      */ = "ST_FUNCTION_DEC_ARGS"
-const ST_FUNCTION_DEC_BODY /*      */ = "ST_FUNCTION_DEC_BODY"
-const ST_GENERIC_EXPRESSION /*     */ = "ST_GENERIC_EXPRESSION"
-const ST_LAMBDA_ARGS /*            */ = "ST_LAMBDA_ARGS"
-const ST_LAMBDA_BODY /*            */ = "ST_LAMBDA_BODY"
-const ST_IF_BODY /*                */ = "ST_IF_BODY"
-const ST_IF_CONDITION /*           */ = "ST_IF_CONDITION"
-const ST_IF_ELSE /*                */ = "ST_IF_ELSE"
-const ST_OBJECT_VALUE /*           */ = "ST_OBJECT_VALUE"
-const ST_OBJECT_KEY /*             */ = "ST_OBJECT_KEY"
-const ST_ROOT /*                   */ = "ST_ROOT"
+const ST_ARRAY /*                   */ = "ST_ARRAY"
+const ST_ASSIGNMENT /*              */ = "ST_ASSIGNMENT"
+const ST_BINARY_OPERATOR /*         */ = "ST_BINARY_OPERATOR"
+const ST_FUNCTION_CALL_ARGS /*      */ = "ST_FUNCTION_CALL_ARGS"
+const ST_FUNCTION_DEC_ARGS /*       */ = "ST_FUNCTION_DEC_ARGS"
+const ST_FUNCTION_DEC_BODY /*       */ = "ST_FUNCTION_DEC_BODY"
+const ST_GENERIC_EXPRESSION /*      */ = "ST_GENERIC_EXPRESSION"
+const ST_LAMBDA_ARGS /*             */ = "ST_LAMBDA_ARGS"
+const ST_LAMBDA_BODY /*             */ = "ST_LAMBDA_BODY"
+const ST_IF_BODY /*                 */ = "ST_IF_BODY"
+const ST_IF_CONDITION /*            */ = "ST_IF_CONDITION"
+const ST_IF_ELSE /*                 */ = "ST_IF_ELSE"
+const ST_OBJECT_VALUE /*            */ = "ST_OBJECT_VALUE"
+const ST_OBJECT_KEY /*              */ = "ST_OBJECT_KEY"
+const ST_ROOT /*                    */ = "ST_ROOT"
 
 const opPriority = (operator) => {
   switch (operator) {
@@ -166,13 +166,7 @@ const getAstFromTokens = (tokens) => {
     } else if (currentScope === ST_IF_ELSE) {
       currentExpressionList = node.else
     } else if (currentScope === ST_BINARY_OPERATOR) {
-      currentExpressionList = node.right
-      if (currentExpressionList.length > 1) {
-        const prevToken = tokens[index - 1]
-        throw new Error(
-          `Unexpected token "${prevToken.value}" on line ${prevToken.lineNumberStart}`
-        )
-      }
+      currentExpressionList = undefined
     }
 
     const pushToExpressionList = (childNode) => {
@@ -186,7 +180,14 @@ const getAstFromTokens = (tokens) => {
             `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
           )
         }
+
+        // For binary operators, we do not push to a list but instead just define the right operand.
+      } else if (currentScope === ST_BINARY_OPERATOR) {
+        node.right = childNode
+
+        return
       }
+
       currentExpressionList.push(childNode)
     }
 
@@ -499,18 +500,16 @@ const getAstFromTokens = (tokens) => {
           left: parentLeft,
           operator: parentOperator,
           parent: node,
-          right: [],
           type: NT_BINARY_EXPR,
         }
         const rightChild = {
           left: childLeft,
           operator: token.value,
           parent: replacedParent,
-          right: [],
         }
 
         scopes.push(ST_BINARY_OPERATOR)
-        replacedParent.right.push(rightChild)
+        replacedParent.right = rightChild
         pushToExpressionList(replacedParent)
 
         node = rightChild
@@ -521,7 +520,6 @@ const getAstFromTokens = (tokens) => {
           left: leftOperand,
           operator: token.value,
           parent: node,
-          right: [],
           type: NT_BINARY_EXPR,
         }
         pushToExpressionList(child)
