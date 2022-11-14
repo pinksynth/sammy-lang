@@ -3,6 +3,7 @@ const {
   characterTypes: {
     CT_AMPERSAND,
     CT_BACKSLASH,
+    CT_BANG,
     CT_DOLLAR_SIGN,
     CT_DOUBLE_QUOTE,
     CT_EQUALS,
@@ -123,6 +124,14 @@ const getToken = ({
   if (latestCharType === CT_PIPE && charType === CT_PIPE) {
     return false
   }
+  // >=, <=, !=
+  if (
+    (latestCharType === CT_GREATER_THAN && charType === CT_EQUALS) ||
+    (latestCharType === CT_LESS_THAN && charType === CT_EQUALS) ||
+    (latestCharType === CT_BANG && charType === CT_EQUALS)
+  ) {
+    return false
+  }
 
   const value = charAccumulator.join("")
 
@@ -147,7 +156,13 @@ const getToken = ({
     tokenType = TT_LAMBDA_OPEN
   } else if (value.substring(0, 3) === "<<<") {
     tokenType = TT_COMMENT
-  } else if (value === "==") {
+  } else if (
+    value === "==" ||
+    value === ">" ||
+    value === "<" ||
+    value === ">=" ||
+    value === "<="
+  ) {
     tokenType = TT_COMPARE
   } else if (charTypeFrom(value[0]) === CT_DOUBLE_QUOTE) {
     tokenType = TT_STRING
@@ -320,7 +335,6 @@ const lex = (sammyScript) => {
     if (
       charType === CT_GREATER_THAN &&
       !stringLiteralMode &&
-      !singleLineCommentMode &&
       charAccumulator.join("").substring(charAccumulator.length - 2) === ">>"
     ) {
       multilineCommentMode = false

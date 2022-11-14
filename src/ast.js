@@ -75,6 +75,7 @@ const opPriority = (operator) => {
     case ".":
       return 0
     case "^":
+    case "%":
       return -1
     case "*":
     case "/":
@@ -85,6 +86,11 @@ const opPriority = (operator) => {
     case "=":
       return -4
     case "==":
+    case "!=":
+    case ">":
+    case "<":
+    case ">=":
+    case "<=":
       return -5
     default:
       throw new Error(`Could not determine precedence for operator ${operator}`)
@@ -92,7 +98,8 @@ const opPriority = (operator) => {
 }
 
 const getNodeFromToken = ({ value, tokenType }) => {
-  let type
+  let type,
+    nodeValue = value
   switch (tokenType) {
     case TT_BOOLEAN:
       type = nt.NT_LITERAL_BOOLEAN
@@ -106,9 +113,16 @@ const getNodeFromToken = ({ value, tokenType }) => {
     case TT_STRING:
       type = nt.NT_LITERAL_STRING
       break
-    case TT_NUMBER:
+    // For numbers, we strip the allowed underscores and just basic float syntax
+    case TT_NUMBER: {
       type = nt.NT_LITERAL_NUMBER
+      let numberValue = ""
+      for (const char of value) {
+        if (char !== "_") numberValue += char
+      }
+      nodeValue = numberValue
       break
+    }
     case TT_VAR:
       type = nt.NT_IDENTIFIER
       break
@@ -120,7 +134,7 @@ const getNodeFromToken = ({ value, tokenType }) => {
   }
   return {
     type,
-    value,
+    value: nodeValue,
   }
 }
 

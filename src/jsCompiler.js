@@ -16,6 +16,7 @@ const {
   NT_LITERAL_STRING,
   NT_LITERAL_UNDEFINED,
   NT_ROOT,
+  NT_GENERIC_EXPRESSION,
 } = require("./ast")
 
 const { nullConsole } = require("./debug")
@@ -129,9 +130,9 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
 
     case NT_LITERAL_ARRAY:
       if (node.children.length === 0) return "[]"
-      return node.children
+      return `[${node.children
         .map((node) => walkNode({ node, varsInScope }))
-        .join(",")
+        .join(",")}]`
 
     case NT_BINARY_EXPR: {
       const left = walkNode({ node: node.left, varsInScope })
@@ -147,11 +148,19 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
         case "/":
         case "+":
         case "-":
+        case "%":
         case ".":
+        case ">":
+        case "<":
+        case ">=":
+        case "<=":
           jsOperator = node.operator
           break
         case "==":
           jsOperator = "==="
+          break
+        case "!=":
+          jsOperator = "!=="
           break
         default:
           break
@@ -160,17 +169,25 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return `${left}${jsOperator}${right}`
     }
 
+    case NT_GENERIC_EXPRESSION: {
+      return `(${node.children
+        .map((node) => walkNode({ node, varsInScope }))
+        .join(",")})`
+    }
+
     case NT_LAMBDA: {
-      let argsString
+      let argsStrings
+      const consts = [...varsInScope.consts]
       if (node.args.length > 0) {
-        argsString = node.args.map(walkAssumedPrimitive)
+        argsStrings = node.args.map(walkAssumedPrimitive)
       } else {
         // TODO: This is really dumb. The lambda should know how many of its arguments are desired and define concise args accordingly.
-        argsString = "$1,$2,$4,$5,$6,$7,$8,$9,$10"
+        argsStrings = ["$1", "$2", "$4", "$5", "$6", "$7", "$8", "$9", "$10"]
       }
-      return `(${argsString})=>{${mapBlockScope({
+
+      return `(${argsStrings.join(",")})=>{${mapBlockScope({
         nodes: node.children,
-        varsInScope,
+        varsInScope: { ...varsInScope, consts: [...consts, ...argsStrings] },
       })}}`
     }
 
