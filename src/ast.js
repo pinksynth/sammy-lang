@@ -1,5 +1,6 @@
 /* global console */
 
+const { nullConsole } = require("./debug")
 const {
   TT_ASSIGNMENT,
   TT_BINARY_OPERATORS,
@@ -29,41 +30,45 @@ const {
 } = require("./tokenTypes")
 
 // AST Node Types
-const NT_ASSIGNMENT /*              */ = "NT_ASSIGNMENT"
-const NT_BINARY_EXPR /*             */ = "NT_BINARY_EXPR"
-const NT_CONCISE_LAMBDA_ARGUMENT /* */ = "NT_CONCISE_LAMBDA_ARGUMENT"
-const NT_FUNCTION_CALL /*           */ = "NT_FUNCTION_CALL"
-const NT_FUNCTION_DECLARATION /*    */ = "NT_FUNCTION_DECLARATION"
-const NT_IDENTIFIER /*              */ = "NT_IDENTIFIER"
-const NT_GENERIC_EXPRESSION /*      */ = "NT_GENERIC_EXPRESSION"
-const NT_IF_EXPR /*                 */ = "NT_IF_EXPR"
-const NT_LAMBDA /*                  */ = "NT_LAMBDA"
-const NT_LITERAL_ARRAY /*           */ = "NT_LITERAL_ARRAY"
-const NT_LITERAL_BOOLEAN /*         */ = "NT_LITERAL_BOOLEAN"
-const NT_LITERAL_NULL /*            */ = "NT_LITERAL_NULL"
-const NT_LITERAL_NUMBER /*          */ = "NT_LITERAL_NUMBER"
-const NT_LITERAL_OBJECT /*          */ = "NT_LITERAL_OBJECT"
-const NT_LITERAL_STRING /*          */ = "NT_LITERAL_STRING"
-const NT_LITERAL_UNDEFINED /*       */ = "NT_LITERAL_UNDEFINED"
-const NT_ROOT /*                    */ = "NT_ROOT"
-const NT_TERNARY_EXPR /*            */ = "NT_TERNARY_EXPR"
+const nt = {
+  NT_ASSIGNMENT: /*              */ "NT_ASSIGNMENT",
+  NT_BINARY_EXPR: /*             */ "NT_BINARY_EXPR",
+  NT_CONCISE_LAMBDA_ARGUMENT: /* */ "NT_CONCISE_LAMBDA_ARGUMENT",
+  NT_FUNCTION_CALL: /*           */ "NT_FUNCTION_CALL",
+  NT_FUNCTION_DECLARATION: /*    */ "NT_FUNCTION_DECLARATION",
+  NT_IDENTIFIER: /*              */ "NT_IDENTIFIER",
+  NT_GENERIC_EXPRESSION: /*      */ "NT_GENERIC_EXPRESSION",
+  NT_IF_EXPR: /*                 */ "NT_IF_EXPR",
+  NT_LAMBDA: /*                  */ "NT_LAMBDA",
+  NT_LITERAL_ARRAY: /*           */ "NT_LITERAL_ARRAY",
+  NT_LITERAL_BOOLEAN: /*         */ "NT_LITERAL_BOOLEAN",
+  NT_LITERAL_NULL: /*            */ "NT_LITERAL_NULL",
+  NT_LITERAL_NUMBER: /*          */ "NT_LITERAL_NUMBER",
+  NT_LITERAL_OBJECT: /*          */ "NT_LITERAL_OBJECT",
+  NT_LITERAL_STRING: /*          */ "NT_LITERAL_STRING",
+  NT_LITERAL_UNDEFINED: /*       */ "NT_LITERAL_UNDEFINED",
+  NT_ROOT: /*                    */ "NT_ROOT",
+  NT_TERNARY_EXPR: /*            */ "NT_TERNARY_EXPR",
+}
 
 // Scope types
-const ST_ARRAY /*                   */ = "ST_ARRAY"
-const ST_ASSIGNMENT /*              */ = "ST_ASSIGNMENT"
-const ST_BINARY_OPERATOR /*         */ = "ST_BINARY_OPERATOR"
-const ST_FUNCTION_CALL_ARGS /*      */ = "ST_FUNCTION_CALL_ARGS"
-const ST_FUNCTION_DEC_ARGS /*       */ = "ST_FUNCTION_DEC_ARGS"
-const ST_FUNCTION_DEC_BODY /*       */ = "ST_FUNCTION_DEC_BODY"
-const ST_GENERIC_EXPRESSION /*      */ = "ST_GENERIC_EXPRESSION"
-const ST_LAMBDA_ARGS /*             */ = "ST_LAMBDA_ARGS"
-const ST_LAMBDA_BODY /*             */ = "ST_LAMBDA_BODY"
-const ST_IF_BODY /*                 */ = "ST_IF_BODY"
-const ST_IF_CONDITION /*            */ = "ST_IF_CONDITION"
-const ST_IF_ELSE /*                 */ = "ST_IF_ELSE"
-const ST_OBJECT_VALUE /*            */ = "ST_OBJECT_VALUE"
-const ST_OBJECT_KEY /*              */ = "ST_OBJECT_KEY"
-const ST_ROOT /*                    */ = "ST_ROOT"
+const st = {
+  ST_ARRAY: /*                   */ "ST_ARRAY",
+  ST_ASSIGNMENT: /*              */ "ST_ASSIGNMENT",
+  ST_BINARY_OPERATOR: /*         */ "ST_BINARY_OPERATOR",
+  ST_FUNCTION_CALL_ARGS: /*      */ "ST_FUNCTION_CALL_ARGS",
+  ST_FUNCTION_DEC_ARGS: /*       */ "ST_FUNCTION_DEC_ARGS",
+  ST_FUNCTION_DEC_BODY: /*       */ "ST_FUNCTION_DEC_BODY",
+  ST_GENERIC_EXPRESSION: /*      */ "ST_GENERIC_EXPRESSION",
+  ST_LAMBDA_ARGS: /*             */ "ST_LAMBDA_ARGS",
+  ST_LAMBDA_BODY: /*             */ "ST_LAMBDA_BODY",
+  ST_IF_BODY: /*                 */ "ST_IF_BODY",
+  ST_IF_CONDITION: /*            */ "ST_IF_CONDITION",
+  ST_IF_ELSE: /*                 */ "ST_IF_ELSE",
+  ST_OBJECT_VALUE: /*            */ "ST_OBJECT_VALUE",
+  ST_OBJECT_KEY: /*              */ "ST_OBJECT_KEY",
+  ST_ROOT: /*                    */ "ST_ROOT",
+}
 
 const opPriority = (operator) => {
   switch (operator) {
@@ -90,25 +95,25 @@ const getNodeFromToken = ({ value, tokenType }) => {
   let type
   switch (tokenType) {
     case TT_BOOLEAN:
-      type = NT_LITERAL_BOOLEAN
+      type = nt.NT_LITERAL_BOOLEAN
       break
     case TT_NULL:
-      type = NT_LITERAL_NULL
+      type = nt.NT_LITERAL_NULL
       break
     case TT_UNDEFINED:
-      type = NT_LITERAL_UNDEFINED
+      type = nt.NT_LITERAL_UNDEFINED
       break
     case TT_STRING:
-      type = NT_LITERAL_STRING
+      type = nt.NT_LITERAL_STRING
       break
     case TT_NUMBER:
-      type = NT_LITERAL_NUMBER
+      type = nt.NT_LITERAL_NUMBER
       break
     case TT_VAR:
-      type = NT_IDENTIFIER
+      type = nt.NT_IDENTIFIER
       break
     case TT_CONCISE_LAMBDA_ARGUMENT:
-      type = NT_CONCISE_LAMBDA_ARGUMENT
+      type = nt.NT_CONCISE_LAMBDA_ARGUMENT
       break
     default:
       throw new Error(`Invalid type ${tokenType}`)
@@ -119,12 +124,10 @@ const getNodeFromToken = ({ value, tokenType }) => {
   }
 }
 
-const nullConsole = { log: () => {}, dir: () => {} }
-
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
-  const ast = { type: NT_ROOT, children: [] }
-  const scopes = [ST_ROOT]
+  const ast = { type: nt.NT_ROOT, children: [] }
+  const scopes = [st.ST_ROOT]
   let currentExpressionList
 
   let node = ast
@@ -136,7 +139,10 @@ const getAstFromTokens = ({ tokens, debug }) => {
     delete tmp.parent
 
     // For right-hand of assignment and binary operators, pop the stack until we reach the heighest unclosed scope.
-    if (currentScope === ST_ASSIGNMENT || currentScope === ST_BINARY_OPERATOR) {
+    if (
+      currentScope === st.ST_ASSIGNMENT ||
+      currentScope === st.ST_BINARY_OPERATOR
+    ) {
       pop()
     }
   }
@@ -160,20 +166,20 @@ const getAstFromTokens = ({ tokens, debug }) => {
     const currentScope = scopes[scopes.length - 1]
     currentExpressionList = node.children
 
-    if (currentScope === ST_IF_CONDITION) {
+    if (currentScope === st.ST_IF_CONDITION) {
       currentExpressionList = node.condition
-    } else if (currentScope === ST_OBJECT_KEY) {
+    } else if (currentScope === st.ST_OBJECT_KEY) {
       currentExpressionList = node.keys
-    } else if (currentScope === ST_OBJECT_VALUE) {
+    } else if (currentScope === st.ST_OBJECT_VALUE) {
       currentExpressionList = node.values
-    } else if (currentScope === ST_IF_ELSE) {
+    } else if (currentScope === st.ST_IF_ELSE) {
       currentExpressionList = node.else
-    } else if (currentScope === ST_BINARY_OPERATOR) {
+    } else if (currentScope === st.ST_BINARY_OPERATOR) {
       currentExpressionList = undefined
     }
 
     const pushToExpressionList = (childNode) => {
-      if (currentScope === ST_OBJECT_VALUE) {
+      if (currentScope === st.ST_OBJECT_VALUE) {
         if (node.keys.length === node.values.length + 1) {
           currentExpressionList.push(childNode)
 
@@ -185,7 +191,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
         }
 
         // For binary operators, we do not push to a list but instead just define the right operand.
-      } else if (currentScope === ST_BINARY_OPERATOR) {
+      } else if (currentScope === st.ST_BINARY_OPERATOR) {
         node.right = childNode
 
         return
@@ -198,7 +204,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     debugConsole.log(token.value, tokenType)
 
     // Function declaration args
-    if (currentScope === ST_FUNCTION_DEC_ARGS) {
+    if (currentScope === st.ST_FUNCTION_DEC_ARGS) {
       if (TT_TERMINALS.includes(tokenType)) {
         node.args.push(getNodeFromToken(token))
 
@@ -214,7 +220,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
         index++
 
         // Note that unlike other things, our scope changes but the parent node (the function declaration) does not change.
-        swapScope(ST_FUNCTION_DEC_BODY)
+        swapScope(st.ST_FUNCTION_DEC_BODY)
 
         continue
       } else {
@@ -225,14 +231,14 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     // Lambda args
-    if (currentScope === ST_LAMBDA_ARGS) {
+    if (currentScope === st.ST_LAMBDA_ARGS) {
       if (TT_TERMINALS.includes(tokenType)) {
         node.args.push(getNodeFromToken(token))
 
         continue
       } else if (tokenType === TT_CURLY_OPEN) {
         // Note that unlike other things, our scope changes but the parent node (the lambda) does not change.
-        swapScope(ST_LAMBDA_BODY)
+        swapScope(st.ST_LAMBDA_BODY)
 
         continue
       } else {
@@ -243,22 +249,22 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     // Move from if condition to if body
-    if (currentScope === ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
-      swapScope(ST_IF_BODY)
+    if (currentScope === st.ST_IF_CONDITION && tokenType === TT_CURLY_OPEN) {
+      swapScope(st.ST_IF_BODY)
 
       continue
     }
 
     // Opening of if statement
     if (tokenType === TT_IF) {
-      scopes.push(ST_IF_CONDITION)
+      scopes.push(st.ST_IF_CONDITION)
 
       const child = {
         condition: [],
         children: [],
         else: [],
         parent: node,
-        type: NT_IF_EXPR,
+        type: nt.NT_IF_EXPR,
       }
       pushToExpressionList(child)
       node = child
@@ -267,13 +273,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     if (tokenType === TT_LAMBDA_OPEN) {
-      scopes.push(ST_LAMBDA_ARGS)
+      scopes.push(st.ST_LAMBDA_ARGS)
 
       const child = {
         args: [],
         children: [],
         parent: node,
-        type: NT_LAMBDA,
+        type: nt.NT_LAMBDA,
       }
       pushToExpressionList(child)
       node = child
@@ -282,11 +288,11 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     // Object key and
-    if (currentScope === ST_OBJECT_KEY) {
+    if (currentScope === st.ST_OBJECT_KEY) {
       if (TT_TERMINALS.includes(tokenType)) {
         if (nextTokenType === TT_COLON) {
           pushToExpressionList(getNodeFromToken(token))
-          swapScope(ST_OBJECT_VALUE)
+          swapScope(st.ST_OBJECT_VALUE)
           // We have consumed the key as well as the colon, so increment the tokens by an extra one.
           index++
 
@@ -314,12 +320,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
           `Syntax Error for function ${nextToken.value} on line ${token.lineNumberStart}`
         )
       }
-      scopes.push(ST_FUNCTION_DEC_ARGS)
+      scopes.push(st.ST_FUNCTION_DEC_ARGS)
       const child = {
         args: [],
         children: [],
         parent: node,
-        type: NT_FUNCTION_DECLARATION,
+        name: nextToken.value,
+        type: nt.NT_FUNCTION_DECLARATION,
       }
       pushToExpressionList(child)
       node = child
@@ -331,25 +338,32 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    if (currentScope === ST_OBJECT_VALUE && tokenType === TT_COMMA) {
-      swapScope(ST_OBJECT_KEY)
+    if (currentScope === st.ST_OBJECT_VALUE && tokenType === TT_COMMA) {
+      swapScope(st.ST_OBJECT_KEY)
 
       continue
     }
 
     // Variable assignment
     if (tokenType === TT_VAR && nextTokenType === TT_ASSIGNMENT) {
-      if (![ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_ROOT].includes(currentScope)) {
+      if (
+        ![
+          st.ST_FUNCTION_DEC_BODY,
+          st.ST_IF_BODY,
+          st.ST_LAMBDA_BODY,
+          st.ST_ROOT,
+        ].includes(currentScope)
+      ) {
         throw new Error(
           `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`
         )
       }
 
-      scopes.push(ST_ASSIGNMENT)
+      scopes.push(st.ST_ASSIGNMENT)
       const child = {
         children: [],
         parent: node,
-        type: NT_ASSIGNMENT,
+        type: nt.NT_ASSIGNMENT,
         variable: token.value,
       }
       pushToExpressionList(child)
@@ -363,12 +377,12 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Function call
     if (tokenType === TT_VAR && nextTokenType === TT_PAREN_OPEN) {
-      scopes.push(ST_FUNCTION_CALL_ARGS)
+      scopes.push(st.ST_FUNCTION_CALL_ARGS)
       const child = {
         children: [],
         function: getNodeFromToken(token),
         parent: node,
-        type: NT_FUNCTION_CALL,
+        type: nt.NT_FUNCTION_CALL,
       }
       pushToExpressionList(child)
       node = child
@@ -381,13 +395,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Object open
     if (tokenType === TT_OBJECT_OPEN) {
-      scopes.push(ST_OBJECT_KEY)
+      scopes.push(st.ST_OBJECT_KEY)
 
       const child = {
         keys: [],
         values: [],
         parent: node,
-        type: NT_LITERAL_OBJECT,
+        type: nt.NT_LITERAL_OBJECT,
       }
       pushToExpressionList(child)
       node = child
@@ -397,8 +411,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Array open
     if (tokenType === TT_BRACKET_OPEN) {
-      scopes.push(ST_ARRAY)
-      const child = { type: NT_LITERAL_ARRAY, parent: node, children: [] }
+      scopes.push(st.ST_ARRAY)
+      const child = { type: nt.NT_LITERAL_ARRAY, parent: node, children: [] }
       pushToExpressionList(child)
       node = child
 
@@ -407,8 +421,12 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Open paren (expression group)
     if (tokenType === TT_PAREN_OPEN) {
-      scopes.push(ST_GENERIC_EXPRESSION)
-      const child = { type: NT_GENERIC_EXPRESSION, parent: node, children: [] }
+      scopes.push(st.ST_GENERIC_EXPRESSION)
+      const child = {
+        type: nt.NT_GENERIC_EXPRESSION,
+        parent: node,
+        children: [],
+      }
       pushToExpressionList(child)
       node = child
 
@@ -419,10 +437,10 @@ const getAstFromTokens = ({ tokens, debug }) => {
     if (tokenType === TT_PAREN_CLOSE) {
       if (
         ![
-          ST_FUNCTION_CALL_ARGS,
-          ST_FUNCTION_DEC_ARGS,
-          ST_GENERIC_EXPRESSION,
-          ST_IF_CONDITION,
+          st.ST_FUNCTION_CALL_ARGS,
+          st.ST_FUNCTION_DEC_ARGS,
+          st.ST_GENERIC_EXPRESSION,
+          st.ST_IF_CONDITION,
         ].includes(currentScope)
       ) {
         throw new Error(
@@ -436,7 +454,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Close array or object
     if (tokenType === TT_BRACKET_CLOSE) {
-      if (![ST_ARRAY, ST_OBJECT_VALUE].includes(currentScope)) {
+      if (![st.ST_ARRAY, st.ST_OBJECT_VALUE].includes(currentScope)) {
         throw new Error(
           `Unexpected closing bracket "]" on line ${token.lineNumberStart}`
         )
@@ -452,7 +470,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       nextTokenType === TT_ELSE &&
       thirdTokenType === TT_CURLY_OPEN
     ) {
-      swapScope(ST_IF_ELSE)
+      swapScope(st.ST_IF_ELSE)
       // We are consuming the "if" body's closing curly, the "else" keyword, and the "else" opening curly, so increment by 2 extra tokens.
 
       index++
@@ -465,10 +483,10 @@ const getAstFromTokens = ({ tokens, debug }) => {
     if (tokenType === TT_CURLY_CLOSE) {
       if (
         ![
-          ST_FUNCTION_DEC_BODY,
-          ST_IF_BODY,
-          ST_IF_ELSE,
-          ST_LAMBDA_BODY,
+          st.ST_FUNCTION_DEC_BODY,
+          st.ST_IF_BODY,
+          st.ST_IF_ELSE,
+          st.ST_LAMBDA_BODY,
         ].includes(currentScope)
       ) {
         throw new Error(
@@ -482,7 +500,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Binary operators
     if (TT_BINARY_OPERATORS.includes(tokenType)) {
-      scopes.push(ST_BINARY_OPERATOR)
+      scopes.push(st.ST_BINARY_OPERATOR)
 
       const leftOperand = currentExpressionList.pop()
 
@@ -492,7 +510,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       // So we have to tell it to be (2 + (3 * 4)).
       // In order to do this, we take the left operand ((2 + 3)) and check if it is a boolean expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
       if (
-        leftOperand.type === NT_BINARY_EXPR &&
+        leftOperand.type === nt.NT_BINARY_EXPR &&
         opPriority(leftOperand.operator) < opPriority(token.value)
       ) {
         const parentLeft = leftOperand.left
@@ -503,16 +521,40 @@ const getAstFromTokens = ({ tokens, debug }) => {
           left: parentLeft,
           operator: parentOperator,
           parent: node,
-          type: NT_BINARY_EXPR,
+          type: nt.NT_BINARY_EXPR,
         }
         const rightChild = {
           left: childLeft,
           operator: token.value,
           parent: replacedParent,
+          type: nt.NT_BINARY_EXPR,
         }
 
-        scopes.push(ST_BINARY_OPERATOR)
+        scopes.push(st.ST_BINARY_OPERATOR)
         replacedParent.right = rightChild
+        pushToExpressionList(replacedParent)
+
+        node = rightChild
+
+        continue
+      } else if (leftOperand.type === nt.NT_ASSIGNMENT) {
+        const parentVariable = leftOperand.variable
+        const childLeft = leftOperand.children[0]
+
+        const replacedParent = {
+          variable: parentVariable,
+          parent: node,
+          type: nt.NT_ASSIGNMENT,
+        }
+        const rightChild = {
+          left: childLeft,
+          operator: token.value,
+          parent: replacedParent,
+          type: nt.NT_BINARY_EXPR,
+        }
+
+        scopes.push(st.ST_BINARY_OPERATOR)
+        replacedParent.children = [rightChild]
         pushToExpressionList(replacedParent)
 
         node = rightChild
@@ -523,7 +565,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
           left: leftOperand,
           operator: token.value,
           parent: node,
-          type: NT_BINARY_EXPR,
+          type: nt.NT_BINARY_EXPR,
         }
         pushToExpressionList(child)
         node = child
@@ -537,8 +579,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
       pushToExpressionList(getNodeFromToken(token))
 
       if (
-        currentScope === ST_ASSIGNMENT ||
-        currentScope === ST_BINARY_OPERATOR
+        currentScope === st.ST_ASSIGNMENT ||
+        currentScope === st.ST_BINARY_OPERATOR
       ) {
         pop()
       }
@@ -553,18 +595,22 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
   if (scopes.length > 1) {
     const currentScope = scopes[scopes.length - 1]
-    const expectedToken = [ST_ARRAY, ST_OBJECT_VALUE].includes(currentScope)
+    const expectedToken = [st.ST_ARRAY, st.ST_OBJECT_VALUE].includes(
+      currentScope
+    )
       ? '"]"'
       : [
-          ST_FUNCTION_CALL_ARGS,
-          ST_FUNCTION_DEC_ARGS,
-          ST_GENERIC_EXPRESSION,
-          ST_IF_CONDITION,
+          st.ST_FUNCTION_CALL_ARGS,
+          st.ST_FUNCTION_DEC_ARGS,
+          st.ST_GENERIC_EXPRESSION,
+          st.ST_IF_CONDITION,
         ].includes(currentScope)
       ? '")"'
-      : [ST_IF_BODY, ST_FUNCTION_DEC_BODY, ST_IF_ELSE].includes(currentScope)
+      : [st.ST_IF_BODY, st.ST_FUNCTION_DEC_BODY, st.ST_IF_ELSE].includes(
+          currentScope
+        )
       ? '"}"'
-      : [ST_BINARY_OPERATOR, ST_ASSIGNMENT].includes(currentScope)
+      : [st.ST_BINARY_OPERATOR, st.ST_ASSIGNMENT].includes(currentScope)
       ? "an expression"
       : "(unknown)"
     throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
@@ -574,4 +620,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
   return ast
 }
 
-module.exports = getAstFromTokens
+module.exports = {
+  ...nt,
+  ...st,
+  getAstFromTokens,
+}

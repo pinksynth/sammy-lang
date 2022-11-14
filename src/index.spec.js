@@ -59,6 +59,7 @@ const expectedAST = {
           type: "NT_LITERAL_OBJECT",
         },
       ],
+      name: "my_func",
       type: "NT_FUNCTION_DECLARATION",
     },
     {

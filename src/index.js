@@ -1,31 +1,41 @@
-const getAstFromTokens = require("./ast")
+const { getAstFromTokens } = require("./ast")
+const jsCompile = require("./jsCompiler")
 const lex = require("./lexer")
 
 // eslint-disable-next-line no-unused-vars
 const astToJS = (ast) => {}
 
-const compiletoAST = ({ input: sammyScript, debug }) => {
-  const tokens = lex(sammyScript)
+const compiletoAST = ({ input, debug }) => {
+  const tokens = lex(input)
   return getAstFromTokens({ tokens, debug })
 }
 
-compiletoAST({
+const compile = ({ input, debug }) => {
+  const ast = compiletoAST({ input, debug })
+  return jsCompile({ ast, debug })
+}
+
+// compile({ input: `[@{b = $1.flarn}]` })
+compile({
   input: `
 function my_func(a b) {
-	%[a: 1, "c": true, 55: [@{$1.flarn}]]
+	%[a: 1, "c": a, 55: [@{b = $1.flarn}]]
 }
+foo = 1
+bar = 1
+x = @ a { console.log(a) }
 if foo == bar {
 	x()
 }
 if
-	a
-	b
-	c
+	foo
+	bar
 {
-	d()
+	x(1 2)
+} else {
+	my_func(foo bar)
 }
 `,
-  debug: true,
 })
 
-module.exports = { compiletoAST }
+module.exports = { compile, compiletoAST }
