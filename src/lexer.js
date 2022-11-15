@@ -114,7 +114,7 @@ const getToken = ({
     return false
   }
   if (latestCharType === CT_PERCENT && charType === CT_LEFT_BRACKET) {
-    // SammyScript object syntax: %[ ]
+    // input object syntax: %[ ]
     return false
   }
   if (latestCharType === CT_EQUALS && charType === CT_EQUALS) {
@@ -132,6 +132,9 @@ const getToken = ({
     (latestCharType === CT_LESS_THAN && charType === CT_EQUALS) ||
     (latestCharType === CT_BANG && charType === CT_EQUALS)
   ) {
+    return false
+  }
+  if (latestCharType === CT_PERIOD && charType === CT_PERIOD) {
     return false
   }
 
@@ -206,7 +209,8 @@ const getToken = ({
     value === "%" ||
     value === "^" ||
     value === "||" ||
-    value === "&&"
+    value === "&&" ||
+    value === ".."
   ) {
     tokenType = TT_OPERATOR_INFIX
   } else if (value === "-") {
@@ -236,7 +240,7 @@ const getToken = ({
   }
 }
 
-const lex = (sammyScript) => {
+const lex = (input) => {
   const tokens = []
 
   let charAccumulator = []
@@ -252,9 +256,13 @@ const lex = (sammyScript) => {
   let numberFloatingPointApplied = false
   let lambdaArgIdentifierMode = false
 
-  for (let index = 0; index < sammyScript.length; index++) {
-    const char = sammyScript[index]
-    const charType = charTypeFrom(char)
+  for (let index = 0; index < input.length; index++) {
+    const char = input[index],
+      nextChar = input[index + 1],
+      thirdChar = input[index + 2]
+    const charType = charTypeFrom(char),
+      nextCharType = nextChar && charTypeFrom(nextChar),
+      thirdCharType = thirdChar && charTypeFrom(thirdChar)
 
     const token = getToken({
       charAccumulator,
@@ -291,6 +299,15 @@ const lex = (sammyScript) => {
       numberMode = true
     }
 
+    // If encountering a period followed by another period, turn off number mode because this will be a range operator (..)
+    if (
+      numberMode &&
+      nextCharType === CT_PERIOD &&
+      thirdCharType === CT_PERIOD
+    ) {
+      numberMode = false
+    }
+
     // If encountering a period in number mode, assume it is our decimal point.
     if (numberMode && charType === CT_PERIOD) {
       if (numberFloatingPointApplied) {
@@ -314,7 +331,7 @@ const lex = (sammyScript) => {
 
     if (charType === CT_DOUBLE_QUOTE) {
       if (stringLiteralMode) {
-        if (charTypeFrom(sammyScript[index - 1]) !== CT_BACKSLASH) {
+        if (charTypeFrom(input[index - 1]) !== CT_BACKSLASH) {
           stringLiteralMode = false
         }
       } else {

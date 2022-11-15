@@ -24,6 +24,10 @@ const { nullConsole } = require("./debug")
 
 let debugConsole
 
+const RANGE_FUNC_NAME = "__RANGE__"
+const RANGE_FUNC = `function ${RANGE_FUNC_NAME}(t,f){if(t===f)return[t];const r=[];if(typeof t==="number"&&typeof f==="number"){if(t<f)for(let e=t;e<=f;e++)r.push(e);else for(let e=t;e>=f;e--)r.push(e)}else if(typeof t==="string"&&typeof f==="string"&&t.length&&f.length){const n=String.fromCharCode;const o=t.charCodeAt(),i=f.charCodeAt();if(o<i)for(let e=o;e<=i;e++)r.push(n(e));else for(let e=o;e>=i;e--)r.push(n(e))}return r}`
+let shouldDefineRangeFunc = false
+
 // As we iterate through expressions in a block scope, if those expressions are assignment expressions, we must make them available to subsequent siblings.
 const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   debugConsole.log("Mapping")
@@ -175,7 +179,12 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
           break
       }
 
-      return `${left}${jsOperator}${right}`
+      if (node.operator === "..") {
+        shouldDefineRangeFunc = true
+        return `(${RANGE_FUNC_NAME}(${left},${right}))`
+      } else {
+        return `${left}${jsOperator}${right}`
+      }
     }
 
     case NT_GENERIC_EXPRESSION: {
@@ -230,13 +239,22 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
   }
 }
 
+const defineHelpers = (string) => {
+  let withHelpers = string
+  if (shouldDefineRangeFunc) {
+    withHelpers = `${RANGE_FUNC};` + string
+  }
+  return withHelpers
+}
+
 const jsCompile = ({ ast, debug, jsGlobals }) => {
   debugConsole = debug ? console : nullConsole
   debugConsole.dir(["ast", ast], { depth: null })
-  const result = walkNode({
+  let result = walkNode({
     node: ast,
     varsInScope: { lets: [], consts: [...jsGlobals] },
   })
+  result = defineHelpers(result)
   debugConsole.log("result:\n", result)
   return result
 }
