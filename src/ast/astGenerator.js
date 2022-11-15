@@ -23,6 +23,7 @@ const handleCloseParen = require("./handleCloseParen")
 const handleCloseBracket = require("./handleCloseBracket")
 const handleKeywordElse = require("./handleKeywordElse")
 const handleCloseCurly = require("./handleCloseCurly")
+const handleBinaryOperator = require("./handleBinaryOperator")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -116,6 +117,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     const context = {
       consumeExtra,
+      currentExpressionList,
       currentScope,
       nextToken,
       nextTokenType,
@@ -254,78 +256,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
       // Some binary operators can also be unary operators ( e.g. "-"). If there are no sibling expressions to the left of binary operator, continue observing rules.
       currentExpressionList?.length > 0
     ) {
-      scopes.push(st.BINARY_OPERATOR)
-
-      const leftOperand = currentExpressionList.pop()
-
-      // Here we do some swapping to handle operator precedence.
-      // That is, we check to see if we found 2 + 3 * 4.
-      // The algorithm wants this to be ((2 + 3) * 4).
-      // So we have to tell it to be (2 + (3 * 4)).
-      // In order to do this, we take the left operand ((2 + 3)) and check if it is a boolean expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
-      if (
-        leftOperand.type === nt.BINARY_EXPR &&
-        opPriority(leftOperand.operator) < opPriority(token.value)
-      ) {
-        const parentLeft = leftOperand.left
-        const childLeft = leftOperand.right
-        const parentOperator = leftOperand.operator
-
-        const replacedParent = {
-          left: parentLeft,
-          operator: parentOperator,
-          parent: node,
-          type: nt.BINARY_EXPR,
-        }
-        const rightChild = {
-          left: childLeft,
-          operator: token.value,
-          parent: replacedParent,
-          type: nt.BINARY_EXPR,
-        }
-
-        scopes.push(st.BINARY_OPERATOR)
-        replacedParent.right = rightChild
-        pushToExpressionList(replacedParent)
-
-        node = rightChild
-
-        continue
-      } else if (leftOperand.type === nt.ASSIGNMENT) {
-        const parentVariable = leftOperand.variable
-        const childLeft = leftOperand.children[0]
-
-        const replacedParent = {
-          variable: parentVariable,
-          parent: node,
-          type: nt.ASSIGNMENT,
-        }
-        const rightChild = {
-          left: childLeft,
-          operator: token.value,
-          parent: replacedParent,
-          type: nt.BINARY_EXPR,
-        }
-
-        scopes.push(st.BINARY_OPERATOR)
-        replacedParent.children = [rightChild]
-        pushToExpressionList(replacedParent)
-
-        node = rightChild
-
-        continue
-      } else {
-        const child = {
-          left: leftOperand,
-          operator: token.value,
-          parent: node,
-          type: nt.BINARY_EXPR,
-        }
-        pushToExpressionList(child)
-        node = child
-
-        continue
-      }
+      handleBinaryOperator(context)
+      continue
     }
 
     // Unary operators, such as !
