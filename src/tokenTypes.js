@@ -31,7 +31,7 @@ const t = {
   WHITESPACE: /*               */ "WHITESPACE",
 }
 
-module.exports = {
+const tt = {
   ...t,
   TERMINALS: [
     t.BOOLEAN,
@@ -55,3 +55,5 @@ module.exports = {
   //
   UNARY_OPERATORS: [t.HYPHEN, t.BANG],
 }
+
+module.exports = tt

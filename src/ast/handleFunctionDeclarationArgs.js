@@ -1,6 +1,6 @@
-const tt = require("../tokenTypes")
 const getTerminalNode = require("./getTerminalNode")
 const st = require("./scopeTypes")
+const tt = require("../tokenTypes")
 
 const handleFunctionDeclarationArgs = ({
   consumeExtra,

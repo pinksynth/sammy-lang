@@ -9,6 +9,8 @@ const st = require("./scopeTypes")
 const opPriority = require("./opPriority")
 const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
 const getTerminalNode = require("./getTerminalNode")
+const handleLambdaArgs = require("./handleLambdaArgs")
+const handleKeywordIf = require("./handleKeywordIf")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -17,6 +19,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
   let currentExpressionList
 
   let node = ast
+  const setNode = (newNode) => {
+    node = newNode
+  }
   const pop = () => {
     scopes.pop()
     const currentScope = scopes[scopes.length - 1]
@@ -97,6 +102,19 @@ const getAstFromTokens = ({ tokens, debug }) => {
       currentExpressionList.push(childNode)
     }
 
+    const context = {
+      consumeExtra,
+      nextToken,
+      nextTokenType,
+      node,
+      pushToExpressionList,
+      scopes,
+      setNode,
+      swapScope,
+      token,
+      tokenType,
+    }
+
     debugConsole.log("scopes", scopes)
     debugConsole.log(token.value, tokenType)
 
@@ -111,58 +129,25 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Function declaration args
     if (currentScope === st.FUNCTION_DEC_ARGS) {
-      handleFunctionDeclarationArgs({
-        consumeExtra,
-        nextToken,
-        nextTokenType,
-        node,
-        swapScope,
-        token,
-        tokenType,
-      })
-
+      handleFunctionDeclarationArgs(context)
       continue
     }
 
     // Lambda args
     if (currentScope === st.LAMBDA_ARGS) {
-      if (tt.TERMINALS.includes(tokenType)) {
-        node.args.push(getTerminalNode(token))
-
-        continue
-      } else if (tokenType === tt.CURLY_OPEN) {
-        // Note that unlike other things, our scope changes but the parent node (the lambda) does not change.
-        swapScope(st.LAMBDA_BODY)
-
-        continue
-      } else {
-        throw new Error(
-          `Unexpected token "${token.value}" when defining a function on line ${token.lineNumberStart}`
-        )
-      }
+      handleLambdaArgs(context)
+      continue
     }
 
     // Move from if condition to if body
     if (currentScope === st.IF_CONDITION && tokenType === tt.CURLY_OPEN) {
       swapScope(st.IF_BODY)
-
       continue
     }
 
     // Opening of if statement
     if (tokenType === tt.IF) {
-      scopes.push(st.IF_CONDITION)
-
-      const child = {
-        condition: [],
-        children: [],
-        else: [],
-        parent: node,
-        type: nt.IF_EXPR,
-      }
-      pushToExpressionList(child)
-      node = child
-
+      handleKeywordIf(context)
       continue
     }
 

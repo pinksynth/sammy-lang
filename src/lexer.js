@@ -37,6 +37,7 @@ const {
   DOT,
   ELSE,
   FUNCTION,
+  HYPHEN,
   IF,
   LAMBDA_OPEN,
   NULL,
@@ -50,7 +51,6 @@ const {
   VAR,
   WEAK,
   WHITESPACE,
-  HYPHEN,
 } = require("./tokenTypes")
 
 const getToken = ({
