@@ -15,6 +15,9 @@ const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
 const opPriority = require("./opPriority")
 const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
 const handleVariableAssignment = require("./handleVariableAssignment")
+const handleFunctionCall = require("./handleFunctionCall")
+const handleObjectOpen = require("./handleObjectOpen")
+const handleArrayOpen = require("./handleArrayOpen")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -190,45 +193,19 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Function call
     if (tokenType === tt.VAR && nextTokenType === tt.PAREN_OPEN) {
-      scopes.push(st.FUNCTION_CALL_ARGS)
-      const child = {
-        children: [],
-        function: getTerminalNode(token),
-        parent: node,
-        type: nt.FUNCTION_CALL,
-      }
-      pushToExpressionList(child)
-      node = child
-
-      // For function calls, we have consumed both the function and the opening paren, so we'll manually increment the tokens by an extra 1.
-      index++
-
+      handleFunctionCall(context)
       continue
     }
 
     // Object open
     if (tokenType === tt.OBJECT_OPEN) {
-      scopes.push(st.OBJECT_KEY)
-
-      const child = {
-        keys: [],
-        values: [],
-        parent: node,
-        type: nt.LITERAL_OBJECT,
-      }
-      pushToExpressionList(child)
-      node = child
-
+      handleObjectOpen(context)
       continue
     }
 
     // Array open
     if (tokenType === tt.BRACKET_OPEN) {
-      scopes.push(st.ARRAY)
-      const child = { type: nt.LITERAL_ARRAY, parent: node, children: [] }
-      pushToExpressionList(child)
-      node = child
-
+      handleArrayOpen(context)
       continue
     }
 
