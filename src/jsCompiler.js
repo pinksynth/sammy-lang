@@ -1,24 +1,5 @@
 /* global console */
-const {
-  NT_ASSIGNMENT,
-  NT_BINARY_EXPR,
-  NT_CONCISE_LAMBDA_ARGUMENT,
-  NT_FUNCTION_CALL,
-  NT_FUNCTION_DECLARATION,
-  NT_IDENTIFIER,
-  NT_IF_EXPR,
-  NT_LAMBDA,
-  NT_LITERAL_ARRAY,
-  NT_LITERAL_BOOLEAN,
-  NT_LITERAL_NULL,
-  NT_LITERAL_NUMBER,
-  NT_LITERAL_OBJECT,
-  NT_LITERAL_STRING,
-  NT_LITERAL_UNDEFINED,
-  NT_ROOT,
-  NT_GENERIC_EXPRESSION,
-  NT_UNARY_EXPRESSION,
-} = require("./ast")
+const nt = require("./ast/nodeTypes")
 
 const { nullConsole } = require("./debug")
 
@@ -38,9 +19,9 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   }
   const childStrings = []
   for (const node of nodes) {
-    if (node.type === NT_ASSIGNMENT) {
+    if (node.type === nt.ASSIGNMENT) {
       thisBlockVars.consts.push(node.variable)
-    } else if (node.type === NT_FUNCTION_DECLARATION) {
+    } else if (node.type === nt.FUNCTION_DECLARATION) {
       thisBlockVars.lets.push(node.name)
     }
     const [childString, { lambdaVarsRequested: childLambdaVarsRequested }] =
@@ -49,7 +30,7 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
     childStrings.push(childString)
   }
   const finalNode = nodes[nodes.length - 1]
-  const finalNodeIsAssignment = finalNode.type === NT_ASSIGNMENT
+  const finalNodeIsAssignment = finalNode.type === nt.ASSIGNMENT
   if (assignmentStr) {
     // If the final node in a block is an assignment or return, we return the variable.
     if (finalNodeIsAssignment) {
@@ -73,7 +54,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
   debugConsole.log("node", node)
   debugConsole.log("varsInScope", varsInScope)
   switch (node.type) {
-    case NT_ROOT: {
+    case nt.ROOT: {
       // eslint-disable-next-line no-unused-vars
       const [result, context] = mapBlockScope({
         nodes: node.children,
@@ -83,11 +64,11 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [result, context]
     }
 
-    case NT_FUNCTION_DECLARATION: {
+    case nt.FUNCTION_DECLARATION: {
       // Make function arguments available the function body, and treat them as `const` so they may not be overridden.
       const consts = [...varsInScope.consts]
       for (const { type, value } of node.args) {
-        if (type === NT_IDENTIFIER) {
+        if (type === nt.IDENTIFIER) {
           consts.push(value)
         }
       }
@@ -101,7 +82,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [expression, context]
     }
 
-    case NT_FUNCTION_CALL: {
+    case nt.FUNCTION_CALL: {
       let lambdaVarsRequested = []
       const functionName = node.function.value
       if (!isPropertyAccess && !inScope(functionName, varsInScope)) {
@@ -126,7 +107,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [expression, { lambdaVarsRequested }]
     }
 
-    case NT_IF_EXPR: {
+    case nt.IF_EXPR: {
       let lambdaVarsRequested = []
       const conditions = node.condition
         .map((node) => {
@@ -168,7 +149,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       ]
     }
 
-    case NT_LITERAL_OBJECT: {
+    case nt.LITERAL_OBJECT: {
       let lambdaVarsRequested = []
       const expression = `({${node.keys
         .map((key, index) => {
@@ -187,7 +168,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [expression, { lambdaVarsRequested }]
     }
 
-    case NT_LITERAL_ARRAY: {
+    case nt.LITERAL_ARRAY: {
       let lambdaVarsRequested = []
       if (node.children.length === 0) return ["[]", { lambdaVarsRequested }]
       const expression = `[${node.children
@@ -204,7 +185,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [expression, { lambdaVarsRequested }]
     }
 
-    case NT_UNARY_EXPRESSION: {
+    case nt.UNARY_EXPRESSION: {
       const space = node.operator === "-" ? " " : ""
       const [operand, context] = walkNode({
         node: node.operand,
@@ -213,7 +194,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [`${space}${node.operator}${operand}`, context]
     }
 
-    case NT_BINARY_EXPR: {
+    case nt.BINARY_EXPR: {
       const [left, { lambdaVarsRequested: leftLambdaVarsRequested }] = walkNode(
         { node: node.left, varsInScope }
       )
@@ -263,7 +244,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       }
     }
 
-    case NT_GENERIC_EXPRESSION: {
+    case nt.GENERIC_EXPRESSION: {
       let lambdaVarsRequested = []
       const expression = `(${node.children
         .map((node) => {
@@ -279,7 +260,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [expression, { lambdaVarsRequested }]
     }
 
-    case NT_LAMBDA: {
+    case nt.LAMBDA: {
       let argsStrings = []
       const consts = [...varsInScope.consts]
       if (node.args.length > 0) {
@@ -314,7 +295,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       ]
     }
 
-    case NT_ASSIGNMENT: {
+    case nt.ASSIGNMENT: {
       const [rightSide, context] = walkNode({
         node: node.children[0],
         varsInScope,
@@ -322,15 +303,15 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       return [`const ${node.variable}=${rightSide}`, context]
     }
 
-    case NT_CONCISE_LAMBDA_ARGUMENT:
-    case NT_IDENTIFIER:
-    case NT_LITERAL_BOOLEAN:
-    case NT_LITERAL_NULL:
-    case NT_LITERAL_NUMBER:
-    case NT_LITERAL_STRING:
-    case NT_LITERAL_UNDEFINED: {
+    case nt.CONCISE_LAMBDA_ARGUMENT:
+    case nt.IDENTIFIER:
+    case nt.LITERAL_BOOLEAN:
+    case nt.LITERAL_NULL:
+    case nt.LITERAL_NUMBER:
+    case nt.LITERAL_STRING:
+    case nt.LITERAL_UNDEFINED: {
       // Raise errors if attempting to use variables that have not been defined.
-      if (node.type === NT_IDENTIFIER && varsInScope) {
+      if (node.type === nt.IDENTIFIER && varsInScope) {
         if (!isPropertyAccess && !inScope(node.value, varsInScope)) {
           throw new Error(
             `Variable ${node.value} is not defined in the current scope.`
@@ -338,7 +319,7 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
         }
       }
       const lambdaVarsRequested = []
-      if (node.type === NT_CONCISE_LAMBDA_ARGUMENT) {
+      if (node.type === nt.CONCISE_LAMBDA_ARGUMENT) {
         lambdaVarsRequested.push(node.value)
       }
       return [node.value, { lambdaVarsRequested }]

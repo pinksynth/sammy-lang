@@ -22,35 +22,35 @@ const {
 } = require("./characterTypes")
 const charTypeFrom = require("./charTypeFrom")
 const {
-  TT_ASSIGNMENT,
-  TT_BANG,
-  TT_BOOLEAN,
-  TT_BRACKET_CLOSE,
-  TT_BRACKET_OPEN,
-  TT_COLON,
-  TT_COMMA,
-  TT_COMMENT,
-  TT_COMPARE,
-  TT_CONCISE_LAMBDA_ARGUMENT,
-  TT_CURLY_CLOSE,
-  TT_CURLY_OPEN,
-  TT_DOT,
-  TT_ELSE,
-  TT_FUNCTION,
-  TT_IF,
-  TT_LAMBDA_OPEN,
-  TT_NULL,
-  TT_NUMBER,
-  TT_OBJECT_OPEN,
-  TT_OPERATOR_INFIX,
-  TT_PAREN_CLOSE,
-  TT_PAREN_OPEN,
-  TT_STRING,
-  TT_UNDEFINED,
-  TT_VAR,
-  TT_WEAK,
-  TT_WHITESPACE,
-  TT_HYPHEN,
+  ASSIGNMENT,
+  BANG,
+  BOOLEAN,
+  BRACKET_CLOSE,
+  BRACKET_OPEN,
+  COLON,
+  COMMA,
+  COMMENT,
+  COMPARE,
+  CONCISE_LAMBDA_ARGUMENT,
+  CURLY_CLOSE,
+  CURLY_OPEN,
+  DOT,
+  ELSE,
+  FUNCTION,
+  IF,
+  LAMBDA_OPEN,
+  NULL,
+  NUMBER,
+  OBJECT_OPEN,
+  OPERATOR_INFIX,
+  PAREN_CLOSE,
+  PAREN_OPEN,
+  STRING,
+  UNDEFINED,
+  VAR,
+  WEAK,
+  WHITESPACE,
+  HYPHEN,
 } = require("./tokenTypes")
 
 const getToken = ({
@@ -142,25 +142,25 @@ const getToken = ({
 
   let tokenType
   if (value === "null") {
-    tokenType = TT_NULL
+    tokenType = NULL
   } else if (value === "undefined") {
-    tokenType = TT_UNDEFINED
+    tokenType = UNDEFINED
   } else if (value === "weak") {
-    tokenType = TT_WEAK
+    tokenType = WEAK
   } else if (value === "if") {
-    tokenType = TT_IF
+    tokenType = IF
   } else if (value === "else") {
-    tokenType = TT_ELSE
+    tokenType = ELSE
   } else if (value === "function") {
-    tokenType = TT_FUNCTION
+    tokenType = FUNCTION
   } else if (value === "true" || value === "false") {
-    tokenType = TT_BOOLEAN
+    tokenType = BOOLEAN
   } else if (value === "%[") {
-    tokenType = TT_OBJECT_OPEN
+    tokenType = OBJECT_OPEN
   } else if (value === "@") {
-    tokenType = TT_LAMBDA_OPEN
+    tokenType = LAMBDA_OPEN
   } else if (value.substring(0, 3) === "<<<") {
-    tokenType = TT_COMMENT
+    tokenType = COMMENT
   } else if (
     value === "==" ||
     value === "!=" ||
@@ -169,39 +169,39 @@ const getToken = ({
     value === ">=" ||
     value === "<="
   ) {
-    tokenType = TT_COMPARE
+    tokenType = COMPARE
   } else if (charTypeFrom(value[0]) === CT_DOUBLE_QUOTE) {
-    tokenType = TT_STRING
+    tokenType = STRING
   } else if (charTypeFrom(value[0]) === CT_DOLLAR_SIGN) {
-    tokenType = TT_CONCISE_LAMBDA_ARGUMENT
+    tokenType = CONCISE_LAMBDA_ARGUMENT
   } else if (charTypeFrom(value[0]) === CT_HASH) {
-    tokenType = TT_COMMENT
+    tokenType = COMMENT
   } else if (latestCharType === CT_WHITESPACE) {
-    tokenType = TT_WHITESPACE
+    tokenType = WHITESPACE
   } else if (latestCharType === CT_NUMBER) {
-    tokenType = TT_NUMBER
+    tokenType = NUMBER
   } else if (value === ".") {
-    tokenType = TT_DOT
+    tokenType = DOT
   } else if (value === "=") {
-    tokenType = TT_ASSIGNMENT
+    tokenType = ASSIGNMENT
   } else if (value === ":") {
-    tokenType = TT_COLON
+    tokenType = COLON
   } else if (value === ",") {
-    tokenType = TT_COMMA
+    tokenType = COMMA
   } else if (value === "[") {
-    tokenType = TT_BRACKET_OPEN
+    tokenType = BRACKET_OPEN
   } else if (value === "]") {
-    tokenType = TT_BRACKET_CLOSE
+    tokenType = BRACKET_CLOSE
   } else if (value === "(") {
-    tokenType = TT_PAREN_OPEN
+    tokenType = PAREN_OPEN
   } else if (value === ")") {
-    tokenType = TT_PAREN_CLOSE
+    tokenType = PAREN_CLOSE
   } else if (value === "{") {
-    tokenType = TT_CURLY_OPEN
+    tokenType = CURLY_OPEN
   } else if (value === "}") {
-    tokenType = TT_CURLY_CLOSE
+    tokenType = CURLY_CLOSE
   } else if (value === "!") {
-    tokenType = TT_BANG
+    tokenType = BANG
   } else if (
     value === "+" ||
     value === "*" ||
@@ -212,11 +212,11 @@ const getToken = ({
     value === "&&" ||
     value === ".."
   ) {
-    tokenType = TT_OPERATOR_INFIX
+    tokenType = OPERATOR_INFIX
   } else if (value === "-") {
-    tokenType = TT_HYPHEN
+    tokenType = HYPHEN
   } else if (latestCharType === CT_IDENTIFIER) {
-    tokenType = TT_VAR
+    tokenType = VAR
   }
 
   if (tokenType === undefined) {
