@@ -15,6 +15,7 @@ const t = {
   TT_DOT: /*                      */ "TT_DOT",
   TT_ELSE: /*                     */ "TT_ELSE",
   TT_FUNCTION: /*                 */ "TT_FUNCTION",
+  TT_HYPHEN: /*                   */ "TT_HYPHEN",
   TT_IF: /*                       */ "TT_IF",
   TT_LAMBDA_OPEN: /*              */ "TT_LAMBDA_OPEN",
   TT_NULL: /*                     */ "TT_NULL",
@@ -45,11 +46,12 @@ module.exports = {
     t.TT_COMPARE,
     t.TT_DOT,
     t.TT_OPERATOR_INFIX,
+    t.TT_HYPHEN,
   ],
   //
   //
   // FIXME: SAMMY! Some tokens, such as "-", can be binary or unary operators depending on their context. I think that the only context necessary is to determine whether there is a left sibling node.
   //
   //
-  TT_UNARY_OPERATORS: [t.TT_BANG],
+  TT_UNARY_OPERATORS: [t.TT_HYPHEN, t.TT_BANG],
 }

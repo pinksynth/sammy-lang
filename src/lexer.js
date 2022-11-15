@@ -50,6 +50,7 @@ const {
   TT_VAR,
   TT_WEAK,
   TT_WHITESPACE,
+  TT_HYPHEN,
 } = require("./tokenTypes")
 
 const getToken = ({
@@ -200,7 +201,6 @@ const getToken = ({
     tokenType = TT_BANG
   } else if (
     value === "+" ||
-    value === "-" ||
     value === "*" ||
     value === "/" ||
     value === "%" ||
@@ -209,6 +209,8 @@ const getToken = ({
     value === "&&"
   ) {
     tokenType = TT_OPERATOR_INFIX
+  } else if (value === "-") {
+    tokenType = TT_HYPHEN
   } else if (latestCharType === CT_IDENTIFIER) {
     tokenType = TT_VAR
   }

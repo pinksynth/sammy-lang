@@ -122,7 +122,14 @@ const ast = {
               children: [
                 {
                   left: {
-                    left: { type: "NT_CONCISE_LAMBDA_ARGUMENT", value: "$1" },
+                    left: {
+                      operand: {
+                        type: "NT_CONCISE_LAMBDA_ARGUMENT",
+                        value: "$1",
+                      },
+                      operator: "-",
+                      type: "NT_UNARY_EXPRESSION",
+                    },
                     operator: "%",
                     type: "NT_BINARY_EXPR",
                     right: { type: "NT_LITERAL_NUMBER", value: "2" },

@@ -136,7 +136,11 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
         .join(",")}]`
 
     case NT_UNARY_EXPRESSION: {
-      return `${node.operator}${walkNode({ node: node.operand, varsInScope })}`
+      const space = node.operator === "-" ? " " : ""
+      return `${space}${node.operator}${walkNode({
+        node: node.operand,
+        varsInScope,
+      })}`
     }
 
     case NT_BINARY_EXPR: {

@@ -532,7 +532,11 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     // Binary operators
-    if (TT_BINARY_OPERATORS.includes(tokenType)) {
+    if (
+      TT_BINARY_OPERATORS.includes(tokenType) &&
+      // Some binary operators can also be unary operators ( e.g. "-"). If there are no sibling expressions to the left of binary operator, continue observing rules.
+      currentExpressionList?.length > 0
+    ) {
       scopes.push(st.ST_BINARY_OPERATOR)
 
       const leftOperand = currentExpressionList.pop()
