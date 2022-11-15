@@ -13,6 +13,7 @@ const handleLambdaArgs = require("./handleLambdaArgs")
 const handleLambdaOpen = require("./handleLambdaOpen")
 const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
 const opPriority = require("./opPriority")
+const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -114,6 +115,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       scopes,
       setNode,
       swapScope,
+      thirdTokenType,
       token,
       tokenType,
     }
@@ -168,26 +170,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Opening of function declaration
     if (tokenType === tt.FUNCTION && nextTokenType === tt.VAR) {
-      if (thirdTokenType !== tt.PAREN_OPEN) {
-        throw new Error(
-          `Syntax Error for function ${nextToken.value} on line ${token.lineNumberStart}`
-        )
-      }
-      scopes.push(st.FUNCTION_DEC_ARGS)
-      const child = {
-        args: [],
-        children: [],
-        parent: node,
-        name: nextToken.value,
-        type: nt.FUNCTION_DECLARATION,
-      }
-      pushToExpressionList(child)
-      node = child
-
-      // For named function declarations, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
-      index++
-      index++
-
+      handleFunctionDeclarationName(context)
       continue
     }
 
