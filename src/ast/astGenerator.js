@@ -6,12 +6,13 @@ const tt = require("../tokenTypes")
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const opPriority = require("./opPriority")
-const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
 const getTerminalNode = require("./getTerminalNode")
-const handleLambdaArgs = require("./handleLambdaArgs")
+const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
 const handleKeywordIf = require("./handleKeywordIf")
+const handleLambdaArgs = require("./handleLambdaArgs")
 const handleLambdaOpen = require("./handleLambdaOpen")
+const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
+const opPriority = require("./opPriority")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -108,6 +109,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       nextToken,
       nextTokenType,
       node,
+      pop,
       pushToExpressionList,
       scopes,
       setNode,
@@ -160,28 +162,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Object key and
     if (currentScope === st.OBJECT_KEY) {
-      if (tt.TERMINALS.includes(tokenType)) {
-        if (nextTokenType === tt.COLON) {
-          pushToExpressionList(getTerminalNode(token))
-          swapScope(st.OBJECT_VALUE)
-          // We have consumed the key as well as the colon, so increment the tokens by an extra one.
-          index++
-
-          continue
-        } else {
-          throw new Error(
-            `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${nextToken.lineNumberStart}`
-          )
-        }
-      } else if (tokenType === tt.BRACKET_CLOSE) {
-        pop()
-
-        continue
-      } else {
-        throw new Error(
-          `Syntax Error inside object literal. Unexpected token ${token.value} (${tokenType}) on line ${token.lineNumberStart}`
-        )
-      }
+      handleObjectKeyOrClose(context)
+      continue
     }
 
     // Opening of function declaration
