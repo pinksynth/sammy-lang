@@ -22,6 +22,7 @@ const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
 const handleCloseParen = require("./handleCloseParen")
 const handleCloseBracket = require("./handleCloseBracket")
 const handleKeywordElse = require("./handleKeywordElse")
+const handleCloseCurly = require("./handleCloseCurly")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -243,20 +244,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Close a function or other block
     if (tokenType === tt.CURLY_CLOSE) {
-      if (
-        ![
-          st.FUNCTION_DEC_BODY,
-          st.IF_BODY,
-          st.IF_ELSE,
-          st.LAMBDA_BODY,
-        ].includes(currentScope)
-      ) {
-        throw new Error(
-          `Unexpected closing brace "}" on line ${token.lineNumberStart}`
-        )
-      }
-      pop()
-
+      handleCloseCurly(context)
       continue
     }
 
