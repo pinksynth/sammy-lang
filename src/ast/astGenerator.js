@@ -6,24 +6,27 @@ const tt = require("../tokenTypes")
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const getTerminalNode = require("./getTerminalNode")
+const getCurrentExpressionListForScope = require("./getCurrentExpressionListForScope")
+const getPushToExpressionListFn = require("./getPushToExpressionListFn")
+const handleArrayOpen = require("./handleArrayOpen")
+const handleBinaryOperator = require("./handleBinaryOperator")
+const handleCloseBracket = require("./handleCloseBracket")
+const handleCloseCurly = require("./handleCloseCurly")
+const handleCloseParen = require("./handleCloseParen")
+const handleFunctionCall = require("./handleFunctionCall")
 const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
+const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
+const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
+const handleKeywordElse = require("./handleKeywordElse")
 const handleKeywordIf = require("./handleKeywordIf")
 const handleLambdaArgs = require("./handleLambdaArgs")
 const handleLambdaOpen = require("./handleLambdaOpen")
 const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
-const opPriority = require("./opPriority")
-const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
-const handleVariableAssignment = require("./handleVariableAssignment")
-const handleFunctionCall = require("./handleFunctionCall")
 const handleObjectOpen = require("./handleObjectOpen")
-const handleArrayOpen = require("./handleArrayOpen")
-const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
-const handleCloseParen = require("./handleCloseParen")
-const handleCloseBracket = require("./handleCloseBracket")
-const handleKeywordElse = require("./handleKeywordElse")
-const handleCloseCurly = require("./handleCloseCurly")
-const handleBinaryOperator = require("./handleBinaryOperator")
+const handleTerminal = require("./handleTerminal")
+const handleUnaryOperator = require("./handleUnaryOperator")
+const handleVariableAssignment = require("./handleVariableAssignment")
+const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -31,10 +34,19 @@ const getAstFromTokens = ({ tokens, debug }) => {
   const scopes = [st.ROOT]
   let currentExpressionList
 
+  // Before traversing tokens, filter out whitespace and comments.
+  tokens = tokens.filter(
+    ({ tokenType }) => tokenType !== tt.WHITESPACE && tokenType !== tt.COMMENT
+  )
+
   let node = ast
+
+  // As we consume tokens, we use this to set the current to descendant or ancestor nodes based on scope changes.
   const setNode = (newNode) => {
     node = newNode
   }
+
+  // When popping up the stack to a ancestor node (such as when a function body has been closed by a "}"), pop the scope stack and set the node to the ancestor. Also, delete the "parent" reference because it is a cyclic reference.
   const pop = () => {
     scopes.pop()
     const currentScope = scopes[scopes.length - 1]
@@ -42,7 +54,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     node = node.parent
     delete tmp.parent
 
-    // For right-hand of assignment and binary operators, pop the stack until we reach the heighest unclosed scope.
+    // For right-hand of assignment, binary operators, and unary operators, pop the stack until we reach a scope which must be explicitly closed.
     if (
       currentScope === st.ASSIGNMENT ||
       currentScope === st.UNARY_OPERATOR ||
@@ -52,14 +64,11 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
   }
 
+  // Sometimes we transition from one scope to another which are part of the same AST node but have different rules. For example, transitioning from an "if" condition to an "if" body.
   const swapScope = (newScope) => {
     scopes.pop()
     scopes.push(newScope)
   }
-
-  tokens = tokens.filter(
-    ({ tokenType }) => tokenType !== tt.WHITESPACE && tokenType !== tt.COMMENT
-  )
 
   let index
   const consumeExtra = () => index++
@@ -73,47 +82,20 @@ const getAstFromTokens = ({ tokens, debug }) => {
       thirdToken = tokens[index + 2],
       thirdTokenType = thirdToken && thirdToken.tokenType
     const currentScope = scopes[scopes.length - 1]
-    currentExpressionList = node.children
 
-    if (currentScope === st.IF_CONDITION) {
-      currentExpressionList = node.condition
-    } else if (currentScope === st.OBJECT_KEY) {
-      currentExpressionList = node.keys
-    } else if (currentScope === st.OBJECT_VALUE) {
-      currentExpressionList = node.values
-    } else if (currentScope === st.IF_ELSE) {
-      currentExpressionList = node.else
-    } else if (currentScope === st.BINARY_OPERATOR) {
-      currentExpressionList = undefined
-    } else if (currentScope === st.UNARY_OPERATOR) {
-      currentExpressionList = undefined
-    }
+    // TODO: Clean up this currentExpressionList stuff, the pushToExpressionList stuff, and any nodes with "children" that should use another name for descendants.
+    currentExpressionList = getCurrentExpressionListForScope({
+      currentScope,
+      node,
+    })
 
-    const pushToExpressionList = (childNode) => {
-      if (currentScope === st.OBJECT_VALUE) {
-        if (node.keys.length === node.values.length + 1) {
-          currentExpressionList.push(childNode)
-
-          return
-        } else {
-          throw new Error(
-            `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
-          )
-        }
-
-        // For binary operators, we do not push to a list but instead just define the right operand.
-      } else if (currentScope === st.BINARY_OPERATOR) {
-        node.right = childNode
-
-        return
-      } else if (currentScope === st.UNARY_OPERATOR) {
-        node.operand = childNode
-
-        return
-      }
-
-      currentExpressionList.push(childNode)
-    }
+    // When adding a descendant to the AST, the way that we add it depends on our current scope.
+    const pushToExpressionList = getPushToExpressionListFn({
+      currentExpressionList,
+      currentScope,
+      node,
+      token,
+    })
 
     const context = {
       consumeExtra,
@@ -262,31 +244,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Unary operators, such as !
     if (tt.UNARY_OPERATORS.includes(tokenType)) {
-      scopes.push(st.UNARY_OPERATOR)
-
-      const child = {
-        operator: token.value,
-        parent: node,
-        type: nt.UNARY_EXPRESSION,
-      }
-      pushToExpressionList(child)
-      node = child
-
+      handleUnaryOperator(context)
       continue
     }
 
     // Terminals
     if (tt.TERMINALS.includes(tokenType)) {
-      pushToExpressionList(getTerminalNode(token))
-
-      if (
-        currentScope === st.ASSIGNMENT ||
-        currentScope === st.UNARY_OPERATOR ||
-        currentScope === st.BINARY_OPERATOR
-      ) {
-        pop()
-      }
-
+      handleTerminal(context)
       continue
     }
 
@@ -295,26 +259,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     )
   }
 
-  if (scopes.length > 1) {
-    const currentScope = scopes[scopes.length - 1]
-    const expectedToken = [st.ARRAY, st.OBJECT_VALUE].includes(currentScope)
-      ? '"]"'
-      : [
-          st.FUNCTION_CALL_ARGS,
-          st.FUNCTION_DEC_ARGS,
-          st.GENERIC_EXPRESSION,
-          st.IF_CONDITION,
-        ].includes(currentScope)
-      ? '")"'
-      : [st.IF_BODY, st.FUNCTION_DEC_BODY, st.IF_ELSE].includes(currentScope)
-      ? '"}"'
-      : [st.UNARY_OPERATOR, st.BINARY_OPERATOR, st.ASSIGNMENT].includes(
-          currentScope
-        )
-      ? "an expression"
-      : "(unknown)"
-    throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
-  }
+  if (scopes.length > 1) throwUnresolvedScopeError(scopes)
 
   debugConsole.dir(ast, { depth: null })
   return ast
