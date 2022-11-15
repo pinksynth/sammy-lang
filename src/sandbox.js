@@ -2,7 +2,8 @@ const { compile } = require(".")
 
 compile({
   input: `
-	%[my_key: "my_val", other_key: @{ console.log($1) }]
+	foo = "bar"
+  bar = "baz"
 	`,
   debug: true,
   jsGlobals: ["console", "Math"],

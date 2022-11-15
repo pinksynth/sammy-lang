@@ -19,13 +19,17 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   }
   const childStrings = []
   for (const node of nodes) {
-    if (node.type === nt.ASSIGNMENT) {
-      thisBlockVars.consts.push(node.variable)
-    } else if (node.type === nt.FUNCTION_DECLARATION) {
+    // For function declarations, make the name available to siblings
+    if (node.type === nt.FUNCTION_DECLARATION) {
       thisBlockVars.lets.push(node.name)
     }
     const [childString, { lambdaVarsRequested: childLambdaVarsRequested }] =
       walkNode({ node, varsInScope: thisBlockVars })
+
+    // For assignments, make the variable available to siblings but not to self
+    if (node.type === nt.ASSIGNMENT) {
+      thisBlockVars.consts.push(node.variable)
+    }
     lambdaVarsRequested = [...lambdaVarsRequested, ...childLambdaVarsRequested]
     childStrings.push(childString)
   }
@@ -48,6 +52,9 @@ const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })[0]
 
 const inScope = (theVar, varsInScope) =>
   varsInScope.lets.includes(theVar) || varsInScope.consts.includes(theVar)
+
+const inScopeAsConstant = (theVar, varsInScope) =>
+  varsInScope.consts.includes(theVar)
 
 const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
   debugConsole.log("--------------------------")
@@ -296,6 +303,11 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
     }
 
     case nt.ASSIGNMENT: {
+      if (inScopeAsConstant(node.variable, varsInScope)) {
+        throw new Error(
+          `Variable "${node.variable}" has already been assigned. To allow it to be reassigned, declare it as: "weak ${node.variable}"`
+        )
+      }
       const [rightSide, context] = walkNode({
         node: node.children[0],
         varsInScope,
