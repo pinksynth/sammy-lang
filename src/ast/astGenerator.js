@@ -11,6 +11,7 @@ const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
 const getTerminalNode = require("./getTerminalNode")
 const handleLambdaArgs = require("./handleLambdaArgs")
 const handleKeywordIf = require("./handleKeywordIf")
+const handleLambdaOpen = require("./handleLambdaOpen")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -151,18 +152,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
+    // Opening lambda function with @
     if (tokenType === tt.LAMBDA_OPEN) {
-      scopes.push(st.LAMBDA_ARGS)
-
-      const child = {
-        args: [],
-        children: [],
-        parent: node,
-        type: nt.LAMBDA,
-      }
-      pushToExpressionList(child)
-      node = child
-
+      handleLambdaOpen(context)
       continue
     }
 
