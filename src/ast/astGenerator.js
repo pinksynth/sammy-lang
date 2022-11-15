@@ -18,6 +18,9 @@ const handleVariableAssignment = require("./handleVariableAssignment")
 const handleFunctionCall = require("./handleFunctionCall")
 const handleObjectOpen = require("./handleObjectOpen")
 const handleArrayOpen = require("./handleArrayOpen")
+const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
+const handleCloseParen = require("./handleCloseParen")
+const handleCloseBracket = require("./handleCloseBracket")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -211,46 +214,19 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Open paren (expression group)
     if (tokenType === tt.PAREN_OPEN) {
-      scopes.push(st.GENERIC_EXPRESSION)
-      const child = {
-        type: nt.GENERIC_EXPRESSION,
-        parent: node,
-        children: [],
-      }
-      pushToExpressionList(child)
-      node = child
-
+      handleGenericExpressionOpen(context)
       continue
     }
 
     // Close paren
     if (tokenType === tt.PAREN_CLOSE) {
-      if (
-        ![
-          st.FUNCTION_CALL_ARGS,
-          st.FUNCTION_DEC_ARGS,
-          st.GENERIC_EXPRESSION,
-          st.IF_CONDITION,
-        ].includes(currentScope)
-      ) {
-        throw new Error(
-          `Unexpected closing bracket ")" on line ${token.lineNumberStart}`
-        )
-      }
-      pop()
-
+      handleCloseParen(context)
       continue
     }
 
     // Close array or object
     if (tokenType === tt.BRACKET_CLOSE) {
-      if (![st.ARRAY, st.OBJECT_VALUE].includes(currentScope)) {
-        throw new Error(
-          `Unexpected closing bracket "]" on line ${token.lineNumberStart}`
-        )
-      }
-      pop()
-
+      handleCloseBracket(context)
       continue
     }
 
