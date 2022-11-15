@@ -2,8 +2,8 @@ const { compile } = require(".")
 
 compile({
   input: `
-	"a".."z".map(@{console.log($1)})
+	%[my_key: "my_val", other_key: @{ console.log($1) }]
 	`,
   debug: true,
-  jsGlobals: ["console", "Math", "a", "b", "c", "d", "e", "f"],
+  jsGlobals: ["console", "Math"],
 })

@@ -30,7 +30,7 @@ let shouldDefineRangeFunc = false
 
 // As we iterate through expressions in a block scope, if those expressions are assignment expressions, we must make them available to subsequent siblings.
 const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
-  debugConsole.log("Mapping")
+  let lambdaVarsRequested = []
   if (nodes.length === 0) return ""
   const thisBlockVars = {
     lets: [...varsInScope.lets],
@@ -43,7 +43,10 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
     } else if (node.type === NT_FUNCTION_DECLARATION) {
       thisBlockVars.lets.push(node.name)
     }
-    childStrings.push(walkNode({ node, varsInScope: thisBlockVars }))
+    const [childString, { lambdaVarsRequested: childLambdaVarsRequested }] =
+      walkNode({ node, varsInScope: thisBlockVars })
+    lambdaVarsRequested = [...lambdaVarsRequested, ...childLambdaVarsRequested]
+    childStrings.push(childString)
   }
   const finalNode = nodes[nodes.length - 1]
   const finalNodeIsAssignment = finalNode.type === NT_ASSIGNMENT
@@ -57,10 +60,10 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
       }`
     }
   }
-  return childStrings.join(";")
+  return [childStrings.join(";"), { lambdaVarsRequested }]
 }
 
-const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })
+const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })[0]
 
 const inScope = (theVar, varsInScope) =>
   varsInScope.lets.includes(theVar) || varsInScope.consts.includes(theVar)
@@ -70,12 +73,15 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
   debugConsole.log("node", node)
   debugConsole.log("varsInScope", varsInScope)
   switch (node.type) {
-    case NT_ROOT:
-      return mapBlockScope({
+    case NT_ROOT: {
+      // eslint-disable-next-line no-unused-vars
+      const [result, context] = mapBlockScope({
         nodes: node.children,
         varsInScope,
         assignmentStr: "",
       })
+      return [result, context]
+    }
 
     case NT_FUNCTION_DECLARATION: {
       // Make function arguments available the function body, and treat them as `const` so they may not be overridden.
@@ -85,75 +91,138 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
           consts.push(value)
         }
       }
-      return `function ${node.name}(${node.args
-        .map(walkAssumedPrimitive)
-        .join(",")}){${mapBlockScope({
+      const [statements, context] = mapBlockScope({
         nodes: node.children,
         varsInScope: { ...varsInScope, consts },
-      })}}`
+      })
+      const expression = `function ${node.name}(${node.args
+        .map(walkAssumedPrimitive)
+        .join(",")}){${statements}}`
+      return [expression, context]
     }
 
     case NT_FUNCTION_CALL: {
+      let lambdaVarsRequested = []
       const functionName = node.function.value
       if (!isPropertyAccess && !inScope(functionName, varsInScope)) {
         throw new Error(
           `Function ${functionName} is not defined in the current scope.`
         )
       }
-      return `${node.function.value}(${node.children
-        .map((node) => walkNode({ node, varsInScope }))
+      const expression = `${node.function.value}(${node.children
+        .map((node) => {
+          const [
+            expression,
+            { lambdaVarsRequested: expressionLambdaVarsRequested },
+          ] = walkNode({ node, varsInScope })
+          lambdaVarsRequested = [
+            ...lambdaVarsRequested,
+            ...expressionLambdaVarsRequested,
+          ]
+          return expression
+        })
         .join(",")})`
+
+      return [expression, { lambdaVarsRequested }]
     }
 
     case NT_IF_EXPR: {
-      let statements = `if(${node.condition
-        .map((node) => walkNode({ node, varsInScope }))
-        .join("&&")}){${mapBlockScope({
-        nodes: node.children,
-        assignmentStr: "tmp=",
-        varsInScope,
-      })}}`
-      if (node.else.length > 0) {
-        statements += `else{${mapBlockScope({
-          nodes: node.else,
+      let lambdaVarsRequested = []
+      const conditions = node.condition
+        .map((node) => {
+          const [
+            expression,
+            { lambdaVarsRequested: expressionLambdaVarsRequested },
+          ] = walkNode({ node, varsInScope })
+          lambdaVarsRequested = [
+            ...lambdaVarsRequested,
+            ...expressionLambdaVarsRequested,
+          ]
+          return expression
+        })
+        .join("&&")
+      const [body, { lambdaVarsRequested: bodyLambdaVarsRequested }] =
+        mapBlockScope({
+          nodes: node.children,
           assignmentStr: "tmp=",
           varsInScope,
-        })}}`
+        })
+      lambdaVarsRequested = [...lambdaVarsRequested, ...bodyLambdaVarsRequested]
+      let statements = `if(${conditions}){${body}}`
+      if (node.else.length > 0) {
+        const [elseBody, { lambdaVarsRequested: elseLambdaVarsRequested }] =
+          mapBlockScope({
+            nodes: node.else,
+            assignmentStr: "tmp=",
+            varsInScope,
+          })
+        statements += `else{${elseBody}}`
+        lambdaVarsRequested = [
+          ...lambdaVarsRequested,
+          ...elseLambdaVarsRequested,
+        ]
       }
-      return `(()=>{let tmp;${statements}return tmp})()`
+      return [
+        `(()=>{let tmp;${statements}return tmp})()`,
+        { lambdaVarsRequested },
+      ]
     }
 
-    case NT_LITERAL_OBJECT:
-      return `({${node.keys
+    case NT_LITERAL_OBJECT: {
+      let lambdaVarsRequested = []
+      const expression = `({${node.keys
         .map((key, index) => {
-          return `${key.value}:${walkNode({
-            node: node.values[index],
-            varsInScope,
-          })}`
+          const [value, { lambdaVarsRequested: valueLambdaVarsRequested }] =
+            walkNode({
+              node: node.values[index],
+              varsInScope,
+            })
+          lambdaVarsRequested = [
+            ...lambdaVarsRequested,
+            ...valueLambdaVarsRequested,
+          ]
+          return `${key.value}:${value}`
         })
         .join(",")}})`
+      return [expression, { lambdaVarsRequested }]
+    }
 
-    case NT_LITERAL_ARRAY:
-      if (node.children.length === 0) return "[]"
-      return `[${node.children
-        .map((node) => walkNode({ node, varsInScope }))
+    case NT_LITERAL_ARRAY: {
+      let lambdaVarsRequested = []
+      if (node.children.length === 0) return ["[]", { lambdaVarsRequested }]
+      const expression = `[${node.children
+        .map((node) => {
+          const [element, { lambdaVarsRequested: elementLambdaVarsRequested }] =
+            walkNode({ node, varsInScope })
+          lambdaVarsRequested = [
+            ...lambdaVarsRequested,
+            ...elementLambdaVarsRequested,
+          ]
+          return element
+        })
         .join(",")}]`
+      return [expression, { lambdaVarsRequested }]
+    }
 
     case NT_UNARY_EXPRESSION: {
       const space = node.operator === "-" ? " " : ""
-      return `${space}${node.operator}${walkNode({
+      const [operand, context] = walkNode({
         node: node.operand,
         varsInScope,
-      })}`
+      })
+      return [`${space}${node.operator}${operand}`, context]
     }
 
     case NT_BINARY_EXPR: {
-      const left = walkNode({ node: node.left, varsInScope })
-      const right = walkNode({
-        node: node.right,
-        varsInScope,
-        isPropertyAccess: node.operator === ".",
-      })
+      const [left, { lambdaVarsRequested: leftLambdaVarsRequested }] = walkNode(
+        { node: node.left, varsInScope }
+      )
+      const [right, { lambdaVarsRequested: rightLambdaVarsRequested }] =
+        walkNode({
+          node: node.right,
+          varsInScope,
+          isPropertyAccess: node.operator === ".",
+        })
       let jsOperator
 
       switch (node.operator) {
@@ -179,41 +248,78 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
           break
       }
 
+      const lambdaVarsRequested = [
+        ...leftLambdaVarsRequested,
+        ...rightLambdaVarsRequested,
+      ]
+
+      const context = { lambdaVarsRequested }
+
       if (node.operator === "..") {
         shouldDefineRangeFunc = true
-        return `(${RANGE_FUNC_NAME}(${left},${right}))`
+        return [`(${RANGE_FUNC_NAME}(${left},${right}))`, context]
       } else {
-        return `${left}${jsOperator}${right}`
+        return [`${left}${jsOperator}${right}`, context]
       }
     }
 
     case NT_GENERIC_EXPRESSION: {
-      return `(${node.children
-        .map((node) => walkNode({ node, varsInScope }))
+      let lambdaVarsRequested = []
+      const expression = `(${node.children
+        .map((node) => {
+          const [sibling, { lambdaVarsRequested: siblingLambdaVarsRequested }] =
+            walkNode({ node, varsInScope })
+          lambdaVarsRequested = [
+            ...lambdaVarsRequested,
+            ...siblingLambdaVarsRequested,
+          ]
+          return sibling
+        })
         .join(",")})`
+      return [expression, { lambdaVarsRequested }]
     }
 
     case NT_LAMBDA: {
-      let argsStrings
+      let argsStrings = []
       const consts = [...varsInScope.consts]
       if (node.args.length > 0) {
         argsStrings = node.args.map(walkAssumedPrimitive)
-      } else {
-        // TODO: This is really dumb. The lambda should know how many of its arguments are desired and define concise args accordingly.
-        argsStrings = ["$1", "$2", "$4", "$5", "$6", "$7", "$8", "$9", "$10"]
       }
 
-      return `(${argsStrings.join(",")})=>{${mapBlockScope({
+      const [statements, { lambdaVarsRequested }] = mapBlockScope({
         nodes: node.children,
         varsInScope: { ...varsInScope, consts: [...consts, ...argsStrings] },
-      })}}`
+      })
+
+      if (argsStrings.length === 0 && lambdaVarsRequested) {
+        const sortedLambdaArgs = lambdaVarsRequested
+          .map((string) => parseInt(string.substr(1), 10))
+          .sort()
+        for (
+          let argNum = 1;
+          argNum <= sortedLambdaArgs[sortedLambdaArgs.length - 1];
+          argNum++
+        ) {
+          if (sortedLambdaArgs.includes(argNum)) {
+            argsStrings.push(`$${argNum}`)
+          } else {
+            argsStrings.push(`$_${argNum}`)
+          }
+        }
+      }
+
+      return [
+        `(${argsStrings.join(",")})=>{${statements}}`,
+        { lambdaVarsRequested },
+      ]
     }
 
     case NT_ASSIGNMENT: {
-      return `const ${node.variable}=${walkNode({
+      const [rightSide, context] = walkNode({
         node: node.children[0],
         varsInScope,
-      })}`
+      })
+      return [`const ${node.variable}=${rightSide}`, context]
     }
 
     case NT_CONCISE_LAMBDA_ARGUMENT:
@@ -231,7 +337,11 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
           )
         }
       }
-      return node.value
+      const lambdaVarsRequested = []
+      if (node.type === NT_CONCISE_LAMBDA_ARGUMENT) {
+        lambdaVarsRequested.push(node.value)
+      }
+      return [node.value, { lambdaVarsRequested }]
     }
 
     default:
@@ -250,7 +360,7 @@ const defineHelpers = (string) => {
 const jsCompile = ({ ast, debug, jsGlobals }) => {
   debugConsole = debug ? console : nullConsole
   debugConsole.dir(["ast", ast], { depth: null })
-  let result = walkNode({
+  let [result] = walkNode({
     node: ast,
     varsInScope: { lets: [], consts: [...jsGlobals] },
   })
