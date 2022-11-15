@@ -14,6 +14,7 @@ const handleLambdaOpen = require("./handleLambdaOpen")
 const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
 const opPriority = require("./opPriority")
 const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
+const handleVariableAssignment = require("./handleVariableAssignment")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -107,6 +108,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     const context = {
       consumeExtra,
+      currentScope,
       nextToken,
       nextTokenType,
       node,
@@ -174,37 +176,15 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
+    // Handle comma after seeing object value
     if (currentScope === st.OBJECT_VALUE && tokenType === tt.COMMA) {
       swapScope(st.OBJECT_KEY)
-
       continue
     }
 
     // Variable assignment
     if (tokenType === tt.VAR && nextTokenType === tt.ASSIGNMENT) {
-      if (
-        ![st.FUNCTION_DEC_BODY, st.IF_BODY, st.LAMBDA_BODY, st.ROOT].includes(
-          currentScope
-        )
-      ) {
-        throw new Error(
-          `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`
-        )
-      }
-
-      scopes.push(st.ASSIGNMENT)
-      const child = {
-        children: [],
-        parent: node,
-        type: nt.ASSIGNMENT,
-        variable: token.value,
-      }
-      pushToExpressionList(child)
-      node = child
-
-      // For normal var assignments, we have consumed both the identifier and the operator, so we'll manually increment the tokens by an extra 1.
-      index++
-
+      handleVariableAssignment(context)
       continue
     }
 
