@@ -21,6 +21,7 @@ const handleArrayOpen = require("./handleArrayOpen")
 const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
 const handleCloseParen = require("./handleCloseParen")
 const handleCloseBracket = require("./handleCloseBracket")
+const handleKeywordElse = require("./handleKeywordElse")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -164,13 +165,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Opening lambda function with @
+    // Opening of lambda function with @
     if (tokenType === tt.LAMBDA_OPEN) {
       handleLambdaOpen(context)
       continue
     }
 
-    // Object key and
+    // Object key or closing curly
     if (currentScope === st.OBJECT_KEY) {
       handleObjectKeyOrClose(context)
       continue
@@ -230,18 +231,13 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // If else
+    // Keyword "else"
     if (
       tokenType === tt.CURLY_CLOSE &&
       nextTokenType === tt.ELSE &&
       thirdTokenType === tt.CURLY_OPEN
     ) {
-      swapScope(st.IF_ELSE)
-      // We are consuming the "if" body's closing curly, the "else" keyword, and the "else" opening curly, so increment by 2 extra tokens.
-
-      index++
-      index++
-
+      handleKeywordElse(context)
       continue
     }
 
