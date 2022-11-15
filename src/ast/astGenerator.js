@@ -7,48 +7,8 @@ const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
 const opPriority = require("./opPriority")
-
-// Gets a terminal node from primitive tokens such as booleans, numbers, or strings.
-const getTerminalNode = ({ value, tokenType }) => {
-  let type,
-    nodeValue = value
-  switch (tokenType) {
-    case tt.BOOLEAN:
-      type = nt.LITERAL_BOOLEAN
-      break
-    case tt.NULL:
-      type = nt.LITERAL_NULL
-      break
-    case tt.UNDEFINED:
-      type = nt.LITERAL_UNDEFINED
-      break
-    case tt.STRING:
-      type = nt.LITERAL_STRING
-      break
-    // For numbers, we strip the allowed underscores and just basic float syntax
-    case tt.NUMBER: {
-      type = nt.LITERAL_NUMBER
-      let numberValue = ""
-      for (const char of value) {
-        if (char !== "_") numberValue += char
-      }
-      nodeValue = numberValue
-      break
-    }
-    case tt.VAR:
-      type = nt.IDENTIFIER
-      break
-    case tt.CONCISE_LAMBDA_ARGUMENT:
-      type = nt.CONCISE_LAMBDA_ARGUMENT
-      break
-    default:
-      throw new Error(`Invalid type ${tokenType}`)
-  }
-  return {
-    type,
-    value: nodeValue,
-  }
-}
+const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
+const getTerminalNode = require("./getTerminalNode")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -73,6 +33,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       pop()
     }
   }
+
   const swapScope = (newScope) => {
     scopes.pop()
     scopes.push(newScope)
@@ -82,7 +43,10 @@ const getAstFromTokens = ({ tokens, debug }) => {
     ({ tokenType }) => tokenType !== tt.WHITESPACE && tokenType !== tt.COMMENT
   )
 
-  for (let index = 0; index < tokens.length; index++) {
+  let index
+  const consumeExtra = () => index++
+
+  for (index = 0; index < tokens.length; index++) {
     debugConsole.log("------------------")
     const token = tokens[index],
       tokenType = token.tokenType,
@@ -147,29 +111,17 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Function declaration args
     if (currentScope === st.FUNCTION_DEC_ARGS) {
-      if (tt.TERMINALS.includes(tokenType)) {
-        node.args.push(getTerminalNode(token))
+      handleFunctionDeclarationArgs({
+        consumeExtra,
+        nextToken,
+        nextTokenType,
+        node,
+        swapScope,
+        token,
+        tokenType,
+      })
 
-        continue
-      } else if (tokenType === tt.PAREN_CLOSE) {
-        if (nextTokenType !== tt.CURLY_OPEN) {
-          throw new Error(
-            `Unexpected token "${nextToken.value}" when defining a function on line ${token.lineNumberStart}`
-          )
-        }
-
-        // When going from function declaration arguments to the body, we consume the closing paren and opening curly brace ") {", so increment the index by an extra 1.
-        index++
-
-        // Note that unlike other things, our scope changes but the parent node (the function declaration) does not change.
-        swapScope(st.FUNCTION_DEC_BODY)
-
-        continue
-      } else {
-        throw new Error(
-          `Unexpected token "${nextToken.value}" when declaring function arguments on line ${token.lineNumberStart}`
-        )
-      }
+      continue
     }
 
     // Lambda args
