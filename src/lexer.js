@@ -56,17 +56,17 @@ const {
 const getToken = ({
   charAccumulator,
   charType,
-  columnNumberEnd,
-  columnNumberStart,
+  currentColumnNumber,
+  currentLineNumber,
   currentLineValue,
   lambdaArgIdentifierMode,
-  lineNumberEnd,
-  lineNumberStart,
   multilineCommentMode,
   numberFloatingPointApplied,
   numberMode,
   singleLineCommentMode,
   stringLiteralMode,
+  tokenColumnNumberStart,
+  tokenLineNumberStart,
 }) => {
   if (charAccumulator.length === 0) return false
 
@@ -221,174 +221,161 @@ const getToken = ({
 
   if (tokenType === undefined) {
     let squiggles = ""
-    for (let index = 0; index < columnNumberStart - 1; index++) {
+    for (let index = 0; index < tokenColumnNumberStart - 1; index++) {
       squiggles += " "
     }
     squiggles += "^"
     throw new Error(
-      `Unexpected token ${value} on line ${lineNumberEnd}:\n${currentLineValue}\n${squiggles}`
+      `Unexpected token ${value} on line ${currentLineNumber}:\n${currentLineValue}\n${squiggles}`
     )
   }
 
   return {
     tokenType,
     value,
-    lineNumberStart,
-    columnNumberStart,
-    lineNumberEnd,
-    columnNumberEnd,
+    lineNumberStart: tokenLineNumberStart,
+    columnNumberStart: tokenColumnNumberStart,
+    lineNumberEnd: currentLineNumber,
+    columnNumberEnd: currentColumnNumber,
   }
 }
 
 const lex = (input) => {
   const tokens = []
-
-  let charAccumulator = []
-  let currentLineValue = ""
-  let tokenLineNumberStart = 1
-  let tokenColumnNumberStart = 1
-  let currentLineNumber = 1
-  let currentColumnNumber = 1
-  let stringLiteralMode = false
-  let singleLineCommentMode = false
-  let multilineCommentMode = false
-  let numberMode = false
-  let numberFloatingPointApplied = false
-  let lambdaArgIdentifierMode = false
+  const state = {
+    charAccumulator: [],
+    currentLineValue: "",
+    tokenLineNumberStart: 1,
+    tokenColumnNumberStart: 1,
+    currentLineNumber: 1,
+    currentColumnNumber: 1,
+    stringLiteralMode: false,
+    singleLineCommentMode: false,
+    multilineCommentMode: false,
+    numberMode: false,
+    numberFloatingPointApplied: false,
+    lambdaArgIdentifierMode: false,
+  }
 
   for (let index = 0; index < input.length; index++) {
-    const char = input[index],
-      nextChar = input[index + 1],
-      thirdChar = input[index + 2]
-    const charType = charTypeFrom(char),
-      nextCharType = nextChar && charTypeFrom(nextChar),
-      thirdCharType = thirdChar && charTypeFrom(thirdChar)
+    state.char = input[index]
+    state.nextChar = input[index + 1]
+    state.thirdChar = input[index + 2]
+    state.charType = charTypeFrom(state.char)
+    state.nextCharType = state.nextChar && charTypeFrom(state.nextChar)
+    state.thirdCharType = state.thirdChar && charTypeFrom(state.thirdChar)
 
-    const token = getToken({
-      charAccumulator,
-      charType,
-      columnNumberEnd: currentColumnNumber,
-      columnNumberStart: tokenColumnNumberStart,
-      currentLineValue,
-      lambdaArgIdentifierMode,
-      lineNumberEnd: currentLineNumber,
-      lineNumberStart: tokenLineNumberStart,
-      multilineCommentMode,
-      numberFloatingPointApplied,
-      numberMode,
-      singleLineCommentMode,
-      stringLiteralMode,
-    })
+    const token = getToken(state)
 
     if (token) {
       tokens.push(token)
-      tokenLineNumberStart = currentLineNumber
-      tokenColumnNumberStart = currentColumnNumber
-      charAccumulator = []
+      state.tokenLineNumberStart = state.currentLineNumber
+      state.tokenColumnNumberStart = state.currentColumnNumber
+      state.charAccumulator = []
     }
 
-    if (lambdaArgIdentifierMode && charType !== CT_NUMBER) {
-      lambdaArgIdentifierMode = false
+    if (state.lambdaArgIdentifierMode && state.charType !== CT_NUMBER) {
+      state.lambdaArgIdentifierMode = false
     }
 
-    if (charAccumulator.length === 0 && charType === CT_DOLLAR_SIGN) {
-      lambdaArgIdentifierMode = true
+    if (
+      state.charAccumulator.length === 0 &&
+      state.charType === CT_DOLLAR_SIGN
+    ) {
+      state.lambdaArgIdentifierMode = true
     }
 
-    if (charAccumulator.length === 0 && charType === CT_NUMBER) {
-      numberMode = true
+    if (state.charAccumulator.length === 0 && state.charType === CT_NUMBER) {
+      state.numberMode = true
     }
 
     // If encountering a period followed by another period, turn off number mode because this will be a range operator (..)
     if (
-      numberMode &&
-      nextCharType === CT_PERIOD &&
-      thirdCharType === CT_PERIOD
+      state.numberMode &&
+      state.nextCharType === CT_PERIOD &&
+      state.thirdCharType === CT_PERIOD
     ) {
-      numberMode = false
+      state.numberMode = false
     }
 
     // If encountering a period in number mode, assume it is our decimal point.
-    if (numberMode && charType === CT_PERIOD) {
-      if (numberFloatingPointApplied) {
-        numberMode = false
-        numberFloatingPointApplied = false
+    if (state.numberMode && state.charType === CT_PERIOD) {
+      if (state.numberFloatingPointApplied) {
+        state.numberMode = false
+        state.numberFloatingPointApplied = false
         // If we've already placed our decimal point and see another dot, it's a new token.
       } else {
-        numberFloatingPointApplied = true
+        state.numberFloatingPointApplied = true
       }
     }
 
     if (
-      numberMode &&
-      charType !== CT_NUMBER &&
-      charType !== CT_UNDERSCORE &&
-      charType !== CT_PERIOD
+      state.numberMode &&
+      state.charType !== CT_NUMBER &&
+      state.charType !== CT_UNDERSCORE &&
+      state.charType !== CT_PERIOD
     ) {
-      numberMode = false
-      numberFloatingPointApplied = false
+      state.numberMode = false
+      state.numberFloatingPointApplied = false
     }
 
-    if (charType === CT_DOUBLE_QUOTE) {
-      if (stringLiteralMode) {
+    if (state.charType === CT_DOUBLE_QUOTE) {
+      if (state.stringLiteralMode) {
         if (charTypeFrom(input[index - 1]) !== CT_BACKSLASH) {
-          stringLiteralMode = false
+          state.stringLiteralMode = false
         }
       } else {
-        stringLiteralMode = true
+        state.stringLiteralMode = true
       }
     }
 
-    if (charType === CT_HASH && !stringLiteralMode) {
-      singleLineCommentMode = true
+    if (state.charType === CT_HASH && !state.stringLiteralMode) {
+      state.singleLineCommentMode = true
     }
-    if (char === "\n" && singleLineCommentMode) {
-      singleLineCommentMode = false
-    }
-
-    if (
-      charType === CT_LESS_THAN &&
-      !stringLiteralMode &&
-      !singleLineCommentMode &&
-      charAccumulator.join("") === "<<"
-    ) {
-      multilineCommentMode = true
+    if (state.char === "\n" && state.singleLineCommentMode) {
+      state.singleLineCommentMode = false
     }
 
     if (
-      charType === CT_GREATER_THAN &&
-      !stringLiteralMode &&
-      charAccumulator.join("").substring(charAccumulator.length - 2) === ">>"
+      state.charType === CT_LESS_THAN &&
+      !state.stringLiteralMode &&
+      !state.singleLineCommentMode &&
+      state.charAccumulator.join("") === "<<"
     ) {
-      multilineCommentMode = false
+      state.multilineCommentMode = true
     }
 
-    if (char === "\n") {
-      currentLineNumber++
-      currentColumnNumber = 1
-      currentLineValue = ""
+    if (
+      state.charType === CT_GREATER_THAN &&
+      !state.stringLiteralMode &&
+      state.charAccumulator
+        .join("")
+        .substring(state.charAccumulator.length - 2) === ">>"
+    ) {
+      state.multilineCommentMode = false
+    }
+
+    if (state.char === "\n") {
+      state.currentLineNumber++
+      state.currentColumnNumber = 1
+      state.currentLineValue = ""
     } else {
-      currentColumnNumber++
-      currentLineValue += char
+      state.currentColumnNumber++
+      state.currentLineValue += state.char
     }
 
-    charAccumulator.push(char)
+    state.charAccumulator.push(state.char)
   }
 
-  tokens.push(
-    getToken({
-      charAccumulator,
-      columnNumberEnd: currentColumnNumber,
-      columnNumberStart: tokenColumnNumberStart,
-      currentLineValue,
-      lambdaArgIdentifierMode,
-      lineNumberEnd: currentLineNumber,
-      lineNumberStart: tokenLineNumberStart,
-      numberFloatingPointApplied,
-      numberMode,
-      stringLiteralMode,
-    })
-  )
+  // Once we're no longer accumulating characters, delete all character properties from the state.
+  delete state.char
+  delete state.nextChar
+  delete state.thirdChar
+  delete state.charType
+  delete state.nextCharType
+  delete state.thirdCharType
+
+  tokens.push(getToken(state))
 
   return tokens
 }
