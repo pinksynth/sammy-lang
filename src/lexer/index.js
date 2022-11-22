@@ -32,6 +32,12 @@ const lex = (input) => {
     tokens: [],
   }
 
+  const defineLatestCharType = () => {
+    state.latestCharType = state.charAccumulator.length
+      ? charTypeFrom(state.charAccumulator[state.charAccumulator.length - 1])
+      : undefined
+  }
+
   for (let index = 0; index < input.length; index++) {
     state.index = index
     state.char = input[index]
@@ -40,6 +46,7 @@ const lex = (input) => {
     state.charType = charTypeFrom(state.char)
     state.nextCharType = state.nextChar && charTypeFrom(state.nextChar)
     state.thirdCharType = state.thirdChar && charTypeFrom(state.thirdChar)
+    defineLatestCharType()
 
     const token = getToken(state)
     if (token) pushToken(token, state)
@@ -67,6 +74,8 @@ const lex = (input) => {
   delete state.charType
   delete state.nextCharType
   delete state.thirdCharType
+
+  defineLatestCharType()
 
   pushToken(getToken(state), state)
 

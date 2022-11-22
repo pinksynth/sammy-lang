@@ -1,95 +1,22 @@
 const charTypeFrom = require("../charTypeFrom")
 const ct = require("../characterTypes")
+const shouldContinueConsumingToken = require("./shouldContinueConsumingToken")
 const tt = require("../tokenTypes")
 
-const getToken = ({
-  charAccumulator,
-  charType,
-  currentColumnNumber,
-  currentLineNumber,
-  currentLineValue,
-  lambdaArgIdentifierMode,
-  multilineCommentMode,
-  numberFloatingPointApplied,
-  numberMode,
-  singleLineCommentMode,
-  stringLiteralMode,
-  tokenColumnNumberStart,
-  tokenLineNumberStart,
-}) => {
+const getToken = (state) => {
+  const {
+    charAccumulator,
+    currentColumnNumber,
+    currentLineNumber,
+    currentLineValue,
+    latestCharType,
+    tokenColumnNumberStart,
+    tokenLineNumberStart,
+  } = state
+
   if (charAccumulator.length === 0) return false
 
-  if (stringLiteralMode) {
-    return false
-  }
-  if (singleLineCommentMode) {
-    return false
-  }
-  if (multilineCommentMode) {
-    return false
-  }
-
-  const latestCharType = charTypeFrom(
-    charAccumulator[charAccumulator.length - 1]
-  )
-
-  if (latestCharType === ct.CT_WHITESPACE && charType === ct.CT_WHITESPACE) {
-    return false
-  }
-  if (
-    (latestCharType === ct.CT_IDENTIFIER ||
-      latestCharType === ct.CT_UNDERSCORE) &&
-    (charType === ct.CT_IDENTIFIER || charType === ct.CT_UNDERSCORE)
-  ) {
-    return false
-  }
-  if (latestCharType === ct.CT_IDENTIFIER && charType === ct.CT_IDENTIFIER) {
-    return false
-  }
-  if (lambdaArgIdentifierMode && charType === ct.CT_NUMBER) {
-    return false
-  }
-  if (numberMode) {
-    if (charType === ct.CT_PERIOD && !numberFloatingPointApplied) {
-      return false
-    }
-    if (charType === ct.CT_NUMBER || charType === ct.CT_UNDERSCORE) {
-      return false
-    }
-  }
-  if (latestCharType === ct.CT_LESS_THAN && charType === ct.CT_LESS_THAN) {
-    return false
-  }
-  if (
-    latestCharType === ct.CT_GREATER_THAN &&
-    charType === ct.CT_GREATER_THAN
-  ) {
-    return false
-  }
-  if (latestCharType === ct.CT_PERCENT && charType === ct.CT_LEFT_BRACKET) {
-    // input object syntax: %[ ]
-    return false
-  }
-  if (latestCharType === ct.CT_EQUALS && charType === ct.CT_EQUALS) {
-    return false
-  }
-  if (latestCharType === ct.CT_AMPERSAND && charType === ct.CT_AMPERSAND) {
-    return false
-  }
-  if (latestCharType === ct.CT_PIPE && charType === ct.CT_PIPE) {
-    return false
-  }
-  // >=, <=, !=
-  if (
-    (latestCharType === ct.CT_GREATER_THAN && charType === ct.CT_EQUALS) ||
-    (latestCharType === ct.CT_LESS_THAN && charType === ct.CT_EQUALS) ||
-    (latestCharType === ct.CT_BANG && charType === ct.CT_EQUALS)
-  ) {
-    return false
-  }
-  if (latestCharType === ct.CT_PERIOD && charType === ct.CT_PERIOD) {
-    return false
-  }
+  if (shouldContinueConsumingToken(state)) return false
 
   const value = charAccumulator.join("")
 
