@@ -1,4 +1,4 @@
-const { getAstFromTokens } = require("./ast/astGenerator")
+const { getAstFromTokens } = require("./ast")
 const jsCompile = require("./jsCompiler")
 const lex = require("./lexer")
 

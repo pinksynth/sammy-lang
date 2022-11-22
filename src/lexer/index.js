@@ -1,4 +1,3 @@
-/* global console */
 const {
   characterTypes: {
     CT_AMPERSAND,
@@ -19,8 +18,8 @@ const {
     CT_UNDERSCORE,
     CT_WHITESPACE,
   },
-} = require("./characterTypes")
-const charTypeFrom = require("./charTypeFrom")
+} = require("../characterTypes")
+const charTypeFrom = require("../charTypeFrom")
 const {
   ASSIGNMENT,
   BANG,
@@ -51,7 +50,7 @@ const {
   VAR,
   WEAK,
   WHITESPACE,
-} = require("./tokenTypes")
+} = require("../tokenTypes")
 
 const getToken = ({
   charAccumulator,
