@@ -1,4 +1,4 @@
-const { characterRanges } = require("./characterTypes")
+const characterRanges = require("./characterRanges")
 
 // To efficiently check types of character codes, use an object in which all possible character values
 const charTypesByCharCode = {}

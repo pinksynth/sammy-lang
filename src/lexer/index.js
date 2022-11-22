@@ -32,6 +32,7 @@ const {
   WHITESPACE,
 } = require("../tokenTypes")
 const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
+const handleOpenLambdaArgIdentifierMode = require("./handleOpenLambdaArgIdentifierMode")
 const pushToken = require("./pushToken")
 
 const getToken = ({
@@ -254,13 +255,7 @@ const lex = (input) => {
     if (token) pushToken(token, state)
 
     handleCloseLambdaArgIdentifierMode(state)
-
-    if (
-      state.charAccumulator.length === 0 &&
-      state.charType === ct.CT_DOLLAR_SIGN
-    ) {
-      state.lambdaArgIdentifierMode = true
-    }
+    handleOpenLambdaArgIdentifierMode(state)
 
     if (state.charAccumulator.length === 0 && state.charType === ct.CT_NUMBER) {
       state.numberMode = true
