@@ -1,5 +1,5 @@
 // Character types
-const c = {
+const ct = {
   CT_AMPERSAND: /*        */ "CT_AMPERSAND",
   CT_ASTERISK: /*         */ "CT_ASTERISK",
   CT_BACKSLASH: /*        */ "CT_BACKSLASH",
@@ -30,41 +30,40 @@ const c = {
   CT_UNDERSCORE: /*       */ "CT_UNDERSCORE",
   CT_WHITESPACE: /*       */ "CT_WHITESPACE",
 }
-const characterTypes = c
 
 const characterRanges = {
-  [c.CT_AMPERSAND]: /*         */ [["&"]],
-  [c.CT_ASTERISK]: /*          */ [["*"]],
-  [c.CT_BACKSLASH]: /*         */ [["\\"]],
-  [c.CT_BANG]: /*              */ [["!"]],
-  [c.CT_COLON]: /*             */ [[":"]],
-  [c.CT_COMMA]: /*             */ [[","]],
-  [c.CT_DOLLAR_SIGN]: /*       */ [["$"]],
-  [c.CT_DOUBLE_QUOTE]: /*      */ [['"']],
-  [c.CT_EQUALS]: /*            */ [["="]],
-  [c.CT_GREATER_THAN]: /*      */ [[">"]],
-  [c.CT_HASH]: /*              */ [["#"]],
-  [c.CT_HYPHEN]: /*            */ [["-"]],
-  [c.CT_IDENTIFIER]: /*        */ [
+  [ct.CT_AMPERSAND]: /*         */ [["&"]],
+  [ct.CT_ASTERISK]: /*          */ [["*"]],
+  [ct.CT_BACKSLASH]: /*         */ [["\\"]],
+  [ct.CT_BANG]: /*              */ [["!"]],
+  [ct.CT_COLON]: /*             */ [[":"]],
+  [ct.CT_COMMA]: /*             */ [[","]],
+  [ct.CT_DOLLAR_SIGN]: /*       */ [["$"]],
+  [ct.CT_DOUBLE_QUOTE]: /*      */ [['"']],
+  [ct.CT_EQUALS]: /*            */ [["="]],
+  [ct.CT_GREATER_THAN]: /*      */ [[">"]],
+  [ct.CT_HASH]: /*              */ [["#"]],
+  [ct.CT_HYPHEN]: /*            */ [["-"]],
+  [ct.CT_IDENTIFIER]: /*        */ [
     ["a", "z"],
     ["A", "Z"],
   ],
-  [c.CT_LEFT_BRACKET]: /*      */ [["["]],
-  [c.CT_LEFT_CURLY]: /*        */ [["{"]],
-  [c.CT_LEFT_PAREN]: /*        */ [["("]],
-  [c.CT_LESS_THAN]: /*         */ [["<"]],
-  [c.CT_NUMBER]: /*            */ [["0", "9"]],
-  [c.CT_PERCENT]: /*           */ [["%"]],
-  [c.CT_PERIOD]: /*            */ [["."]],
-  [c.CT_PIPE]: /*              */ [["|"]],
-  [c.CT_PLUS_SIGN]: /*         */ [["+"]],
-  [c.CT_RIGHT_BRACKET]: /*     */ [["]"]],
-  [c.CT_RIGHT_CURLY]: /*       */ [["}"]],
-  [c.CT_RIGHT_PAREN]: /*       */ [[")"]],
-  [c.CT_SINGLE_QUOTE]: /*      */ [["'"]],
-  [c.CT_SLASH]: /*             */ [["/"]],
-  [c.CT_UNDERSCORE]: /*        */ [["_"]],
-  [c.CT_WHITESPACE]: /*        */ [["\n"], ["\t"], [" "]],
+  [ct.CT_LEFT_BRACKET]: /*      */ [["["]],
+  [ct.CT_LEFT_CURLY]: /*        */ [["{"]],
+  [ct.CT_LEFT_PAREN]: /*        */ [["("]],
+  [ct.CT_LESS_THAN]: /*         */ [["<"]],
+  [ct.CT_NUMBER]: /*            */ [["0", "9"]],
+  [ct.CT_PERCENT]: /*           */ [["%"]],
+  [ct.CT_PERIOD]: /*            */ [["."]],
+  [ct.CT_PIPE]: /*              */ [["|"]],
+  [ct.CT_PLUS_SIGN]: /*         */ [["+"]],
+  [ct.CT_RIGHT_BRACKET]: /*     */ [["]"]],
+  [ct.CT_RIGHT_CURLY]: /*       */ [["}"]],
+  [ct.CT_RIGHT_PAREN]: /*       */ [[")"]],
+  [ct.CT_SINGLE_QUOTE]: /*      */ [["'"]],
+  [ct.CT_SLASH]: /*             */ [["/"]],
+  [ct.CT_UNDERSCORE]: /*        */ [["_"]],
+  [ct.CT_WHITESPACE]: /*        */ [["\n"], ["\t"], [" "]],
 }
 
-module.exports = { characterRanges, characterTypes }
+module.exports = { characterRanges, ...ct }

@@ -1,24 +1,4 @@
-const {
-  characterTypes: {
-    CT_AMPERSAND,
-    CT_BACKSLASH,
-    CT_BANG,
-    CT_DOLLAR_SIGN,
-    CT_DOUBLE_QUOTE,
-    CT_EQUALS,
-    CT_GREATER_THAN,
-    CT_HASH,
-    CT_IDENTIFIER,
-    CT_LEFT_BRACKET,
-    CT_LESS_THAN,
-    CT_NUMBER,
-    CT_PERCENT,
-    CT_PERIOD,
-    CT_PIPE,
-    CT_UNDERSCORE,
-    CT_WHITESPACE,
-  },
-} = require("../characterTypes")
+const ct = require("../characterTypes")
 const charTypeFrom = require("../charTypeFrom")
 const {
   ASSIGNMENT,
@@ -51,6 +31,7 @@ const {
   WEAK,
   WHITESPACE,
 } = require("../tokenTypes")
+const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
 const pushToken = require("./pushToken")
 
 const getToken = ({
@@ -84,57 +65,61 @@ const getToken = ({
     charAccumulator[charAccumulator.length - 1]
   )
 
-  if (latestCharType === CT_WHITESPACE && charType === CT_WHITESPACE) {
+  if (latestCharType === ct.CT_WHITESPACE && charType === ct.CT_WHITESPACE) {
     return false
   }
   if (
-    (latestCharType === CT_IDENTIFIER || latestCharType === CT_UNDERSCORE) &&
-    (charType === CT_IDENTIFIER || charType === CT_UNDERSCORE)
+    (latestCharType === ct.CT_IDENTIFIER ||
+      latestCharType === ct.CT_UNDERSCORE) &&
+    (charType === ct.CT_IDENTIFIER || charType === ct.CT_UNDERSCORE)
   ) {
     return false
   }
-  if (latestCharType === CT_IDENTIFIER && charType === CT_IDENTIFIER) {
+  if (latestCharType === ct.CT_IDENTIFIER && charType === ct.CT_IDENTIFIER) {
     return false
   }
-  if (lambdaArgIdentifierMode && charType === CT_NUMBER) {
+  if (lambdaArgIdentifierMode && charType === ct.CT_NUMBER) {
     return false
   }
   if (numberMode) {
-    if (charType === CT_PERIOD && !numberFloatingPointApplied) {
+    if (charType === ct.CT_PERIOD && !numberFloatingPointApplied) {
       return false
     }
-    if (charType === CT_NUMBER || charType === CT_UNDERSCORE) {
+    if (charType === ct.CT_NUMBER || charType === ct.CT_UNDERSCORE) {
       return false
     }
   }
-  if (latestCharType === CT_LESS_THAN && charType === CT_LESS_THAN) {
+  if (latestCharType === ct.CT_LESS_THAN && charType === ct.CT_LESS_THAN) {
     return false
   }
-  if (latestCharType === CT_GREATER_THAN && charType === CT_GREATER_THAN) {
+  if (
+    latestCharType === ct.CT_GREATER_THAN &&
+    charType === ct.CT_GREATER_THAN
+  ) {
     return false
   }
-  if (latestCharType === CT_PERCENT && charType === CT_LEFT_BRACKET) {
+  if (latestCharType === ct.CT_PERCENT && charType === ct.CT_LEFT_BRACKET) {
     // input object syntax: %[ ]
     return false
   }
-  if (latestCharType === CT_EQUALS && charType === CT_EQUALS) {
+  if (latestCharType === ct.CT_EQUALS && charType === ct.CT_EQUALS) {
     return false
   }
-  if (latestCharType === CT_AMPERSAND && charType === CT_AMPERSAND) {
+  if (latestCharType === ct.CT_AMPERSAND && charType === ct.CT_AMPERSAND) {
     return false
   }
-  if (latestCharType === CT_PIPE && charType === CT_PIPE) {
+  if (latestCharType === ct.CT_PIPE && charType === ct.CT_PIPE) {
     return false
   }
   // >=, <=, !=
   if (
-    (latestCharType === CT_GREATER_THAN && charType === CT_EQUALS) ||
-    (latestCharType === CT_LESS_THAN && charType === CT_EQUALS) ||
-    (latestCharType === CT_BANG && charType === CT_EQUALS)
+    (latestCharType === ct.CT_GREATER_THAN && charType === ct.CT_EQUALS) ||
+    (latestCharType === ct.CT_LESS_THAN && charType === ct.CT_EQUALS) ||
+    (latestCharType === ct.CT_BANG && charType === ct.CT_EQUALS)
   ) {
     return false
   }
-  if (latestCharType === CT_PERIOD && charType === CT_PERIOD) {
+  if (latestCharType === ct.CT_PERIOD && charType === ct.CT_PERIOD) {
     return false
   }
 
@@ -170,15 +155,15 @@ const getToken = ({
     value === "<="
   ) {
     tokenType = COMPARE
-  } else if (charTypeFrom(value[0]) === CT_DOUBLE_QUOTE) {
+  } else if (charTypeFrom(value[0]) === ct.CT_DOUBLE_QUOTE) {
     tokenType = STRING
-  } else if (charTypeFrom(value[0]) === CT_DOLLAR_SIGN) {
+  } else if (charTypeFrom(value[0]) === ct.CT_DOLLAR_SIGN) {
     tokenType = CONCISE_LAMBDA_ARGUMENT
-  } else if (charTypeFrom(value[0]) === CT_HASH) {
+  } else if (charTypeFrom(value[0]) === ct.CT_HASH) {
     tokenType = COMMENT
-  } else if (latestCharType === CT_WHITESPACE) {
+  } else if (latestCharType === ct.CT_WHITESPACE) {
     tokenType = WHITESPACE
-  } else if (latestCharType === CT_NUMBER) {
+  } else if (latestCharType === ct.CT_NUMBER) {
     tokenType = NUMBER
   } else if (value === ".") {
     tokenType = DOT
@@ -215,7 +200,7 @@ const getToken = ({
     tokenType = OPERATOR_INFIX
   } else if (value === "-") {
     tokenType = HYPHEN
-  } else if (latestCharType === CT_IDENTIFIER) {
+  } else if (latestCharType === ct.CT_IDENTIFIER) {
     tokenType = VAR
   }
 
@@ -268,32 +253,30 @@ const lex = (input) => {
     const token = getToken(state)
     if (token) pushToken(token, state)
 
-    if (state.lambdaArgIdentifierMode && state.charType !== CT_NUMBER) {
-      state.lambdaArgIdentifierMode = false
-    }
+    handleCloseLambdaArgIdentifierMode(state)
 
     if (
       state.charAccumulator.length === 0 &&
-      state.charType === CT_DOLLAR_SIGN
+      state.charType === ct.CT_DOLLAR_SIGN
     ) {
       state.lambdaArgIdentifierMode = true
     }
 
-    if (state.charAccumulator.length === 0 && state.charType === CT_NUMBER) {
+    if (state.charAccumulator.length === 0 && state.charType === ct.CT_NUMBER) {
       state.numberMode = true
     }
 
     // If encountering a period followed by another period, turn off number mode because this will be a range operator (..)
     if (
       state.numberMode &&
-      state.nextCharType === CT_PERIOD &&
-      state.thirdCharType === CT_PERIOD
+      state.nextCharType === ct.CT_PERIOD &&
+      state.thirdCharType === ct.CT_PERIOD
     ) {
       state.numberMode = false
     }
 
     // If encountering a period in number mode, assume it is our decimal point.
-    if (state.numberMode && state.charType === CT_PERIOD) {
+    if (state.numberMode && state.charType === ct.CT_PERIOD) {
       if (state.numberFloatingPointApplied) {
         state.numberMode = false
         state.numberFloatingPointApplied = false
@@ -305,17 +288,17 @@ const lex = (input) => {
 
     if (
       state.numberMode &&
-      state.charType !== CT_NUMBER &&
-      state.charType !== CT_UNDERSCORE &&
-      state.charType !== CT_PERIOD
+      state.charType !== ct.CT_NUMBER &&
+      state.charType !== ct.CT_UNDERSCORE &&
+      state.charType !== ct.CT_PERIOD
     ) {
       state.numberMode = false
       state.numberFloatingPointApplied = false
     }
 
-    if (state.charType === CT_DOUBLE_QUOTE) {
+    if (state.charType === ct.CT_DOUBLE_QUOTE) {
       if (state.stringLiteralMode) {
-        if (charTypeFrom(input[index - 1]) !== CT_BACKSLASH) {
+        if (charTypeFrom(input[index - 1]) !== ct.CT_BACKSLASH) {
           state.stringLiteralMode = false
         }
       } else {
@@ -323,7 +306,7 @@ const lex = (input) => {
       }
     }
 
-    if (state.charType === CT_HASH && !state.stringLiteralMode) {
+    if (state.charType === ct.CT_HASH && !state.stringLiteralMode) {
       state.singleLineCommentMode = true
     }
     if (state.char === "\n" && state.singleLineCommentMode) {
@@ -331,7 +314,7 @@ const lex = (input) => {
     }
 
     if (
-      state.charType === CT_LESS_THAN &&
+      state.charType === ct.CT_LESS_THAN &&
       !state.stringLiteralMode &&
       !state.singleLineCommentMode &&
       state.charAccumulator.join("") === "<<"
@@ -340,7 +323,7 @@ const lex = (input) => {
     }
 
     if (
-      state.charType === CT_GREATER_THAN &&
+      state.charType === ct.CT_GREATER_THAN &&
       !state.stringLiteralMode &&
       state.charAccumulator
         .join("")
