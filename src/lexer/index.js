@@ -33,6 +33,9 @@ const {
 } = require("../tokenTypes")
 const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
 const handleOpenLambdaArgIdentifierMode = require("./handleOpenLambdaArgIdentifierMode")
+const handlePeriodWhileInNumberMode = require("./handlePeriodWhileInNumberMode")
+const handleRangeOperator = require("./handleRangeOperator")
+const handleTokenStartNumber = require("./handleTokenStartNumber")
 const pushToken = require("./pushToken")
 
 const getToken = ({
@@ -256,30 +259,9 @@ const lex = (input) => {
 
     handleCloseLambdaArgIdentifierMode(state)
     handleOpenLambdaArgIdentifierMode(state)
-
-    if (state.charAccumulator.length === 0 && state.charType === ct.CT_NUMBER) {
-      state.numberMode = true
-    }
-
-    // If encountering a period followed by another period, turn off number mode because this will be a range operator (..)
-    if (
-      state.numberMode &&
-      state.nextCharType === ct.CT_PERIOD &&
-      state.thirdCharType === ct.CT_PERIOD
-    ) {
-      state.numberMode = false
-    }
-
-    // If encountering a period in number mode, assume it is our decimal point.
-    if (state.numberMode && state.charType === ct.CT_PERIOD) {
-      if (state.numberFloatingPointApplied) {
-        state.numberMode = false
-        state.numberFloatingPointApplied = false
-        // If we've already placed our decimal point and see another dot, it's a new token.
-      } else {
-        state.numberFloatingPointApplied = true
-      }
-    }
+    handleTokenStartNumber(state)
+    handleRangeOperator(state)
+    handlePeriodWhileInNumberMode(state)
 
     if (
       state.numberMode &&
