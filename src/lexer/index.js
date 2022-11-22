@@ -32,6 +32,8 @@ const {
   WHITESPACE,
 } = require("../tokenTypes")
 const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
+const handleDoubleQuote = require("./handleDoubleQuote")
+const handleEndNumberMode = require("./handleEndNumberMode")
 const handleOpenLambdaArgIdentifierMode = require("./handleOpenLambdaArgIdentifierMode")
 const handlePeriodWhileInNumberMode = require("./handlePeriodWhileInNumberMode")
 const handleRangeOperator = require("./handleRangeOperator")
@@ -235,6 +237,7 @@ const lex = (input) => {
     currentColumnNumber: 1,
     currentLineNumber: 1,
     currentLineValue: "",
+    input,
     lambdaArgIdentifierMode: false,
     multilineCommentMode: false,
     numberFloatingPointApplied: false,
@@ -247,6 +250,7 @@ const lex = (input) => {
   }
 
   for (let index = 0; index < input.length; index++) {
+    state.index = index
     state.char = input[index]
     state.nextChar = input[index + 1]
     state.thirdChar = input[index + 2]
@@ -262,26 +266,8 @@ const lex = (input) => {
     handleTokenStartNumber(state)
     handleRangeOperator(state)
     handlePeriodWhileInNumberMode(state)
-
-    if (
-      state.numberMode &&
-      state.charType !== ct.CT_NUMBER &&
-      state.charType !== ct.CT_UNDERSCORE &&
-      state.charType !== ct.CT_PERIOD
-    ) {
-      state.numberMode = false
-      state.numberFloatingPointApplied = false
-    }
-
-    if (state.charType === ct.CT_DOUBLE_QUOTE) {
-      if (state.stringLiteralMode) {
-        if (charTypeFrom(input[index - 1]) !== ct.CT_BACKSLASH) {
-          state.stringLiteralMode = false
-        }
-      } else {
-        state.stringLiteralMode = true
-      }
-    }
+    handleEndNumberMode(state)
+    handleDoubleQuote(state)
 
     if (state.charType === ct.CT_HASH && !state.stringLiteralMode) {
       state.singleLineCommentMode = true
