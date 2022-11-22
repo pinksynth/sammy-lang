@@ -51,6 +51,7 @@ const {
   WEAK,
   WHITESPACE,
 } = require("../tokenTypes")
+const pushToken = require("./pushToken")
 
 const getToken = ({
   charAccumulator,
@@ -240,20 +241,20 @@ const getToken = ({
 }
 
 const lex = (input) => {
-  const tokens = []
   const state = {
     charAccumulator: [],
-    currentLineValue: "",
-    tokenLineNumberStart: 1,
-    tokenColumnNumberStart: 1,
-    currentLineNumber: 1,
     currentColumnNumber: 1,
-    stringLiteralMode: false,
-    singleLineCommentMode: false,
-    multilineCommentMode: false,
-    numberMode: false,
-    numberFloatingPointApplied: false,
+    currentLineNumber: 1,
+    currentLineValue: "",
     lambdaArgIdentifierMode: false,
+    multilineCommentMode: false,
+    numberFloatingPointApplied: false,
+    numberMode: false,
+    singleLineCommentMode: false,
+    stringLiteralMode: false,
+    tokenColumnNumberStart: 1,
+    tokenLineNumberStart: 1,
+    tokens: [],
   }
 
   for (let index = 0; index < input.length; index++) {
@@ -265,13 +266,7 @@ const lex = (input) => {
     state.thirdCharType = state.thirdChar && charTypeFrom(state.thirdChar)
 
     const token = getToken(state)
-
-    if (token) {
-      tokens.push(token)
-      state.tokenLineNumberStart = state.currentLineNumber
-      state.tokenColumnNumberStart = state.currentColumnNumber
-      state.charAccumulator = []
-    }
+    if (token) pushToken(token, state)
 
     if (state.lambdaArgIdentifierMode && state.charType !== CT_NUMBER) {
       state.lambdaArgIdentifierMode = false
@@ -374,9 +369,9 @@ const lex = (input) => {
   delete state.nextCharType
   delete state.thirdCharType
 
-  tokens.push(getToken(state))
+  pushToken(getToken(state), state)
 
-  return tokens
+  return state.tokens
 }
 
 module.exports = lex
