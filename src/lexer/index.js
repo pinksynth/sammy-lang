@@ -32,9 +32,14 @@ const {
   WHITESPACE,
 } = require("../tokenTypes")
 const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
+const handleCloseMultilineComment = require("./handleCloseMultilineComment")
+const handleCloseSingleLineComment = require("./handleCloseSingleLineComment")
 const handleDoubleQuote = require("./handleDoubleQuote")
 const handleEndNumberMode = require("./handleEndNumberMode")
+const handleIncrementLinesAndColumns = require("./handleIncrementLinesAndColumns")
 const handleOpenLambdaArgIdentifierMode = require("./handleOpenLambdaArgIdentifierMode")
+const handleOpenMultilineComment = require("./handleOpenMultilineComment")
+const handleOpenSingleLineComment = require("./handleOpenSingleLineComment")
 const handlePeriodWhileInNumberMode = require("./handlePeriodWhileInNumberMode")
 const handleRangeOperator = require("./handleRangeOperator")
 const handleTokenStartNumber = require("./handleTokenStartNumber")
@@ -268,41 +273,11 @@ const lex = (input) => {
     handlePeriodWhileInNumberMode(state)
     handleEndNumberMode(state)
     handleDoubleQuote(state)
-
-    if (state.charType === ct.CT_HASH && !state.stringLiteralMode) {
-      state.singleLineCommentMode = true
-    }
-    if (state.char === "\n" && state.singleLineCommentMode) {
-      state.singleLineCommentMode = false
-    }
-
-    if (
-      state.charType === ct.CT_LESS_THAN &&
-      !state.stringLiteralMode &&
-      !state.singleLineCommentMode &&
-      state.charAccumulator.join("") === "<<"
-    ) {
-      state.multilineCommentMode = true
-    }
-
-    if (
-      state.charType === ct.CT_GREATER_THAN &&
-      !state.stringLiteralMode &&
-      state.charAccumulator
-        .join("")
-        .substring(state.charAccumulator.length - 2) === ">>"
-    ) {
-      state.multilineCommentMode = false
-    }
-
-    if (state.char === "\n") {
-      state.currentLineNumber++
-      state.currentColumnNumber = 1
-      state.currentLineValue = ""
-    } else {
-      state.currentColumnNumber++
-      state.currentLineValue += state.char
-    }
+    handleOpenSingleLineComment(state)
+    handleCloseSingleLineComment(state)
+    handleOpenMultilineComment(state)
+    handleCloseMultilineComment(state)
+    handleIncrementLinesAndColumns(state)
 
     state.charAccumulator.push(state.char)
   }
