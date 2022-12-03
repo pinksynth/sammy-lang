@@ -2,14 +2,11 @@ const { getAstFromTokens } = require("./ast")
 const jsCompile = require("./jsCompiler")
 const lex = require("./lexer")
 
-const compiletoAST = ({ input, debug }) => {
-  const tokens = lex(input)
-  return getAstFromTokens({ tokens, debug })
-}
-
 const compile = ({ input, debug, jsGlobals }) => {
-  const ast = compiletoAST({ input, debug })
+  const tokens = lex(input)
+  // console.dir({ tokens }, { depth: null, maxArrayLength: null })
+  const ast = getAstFromTokens({ tokens, debug })
   return jsCompile({ ast, debug, jsGlobals })
 }
 
-module.exports = { compile, compiletoAST }
+module.exports = { compile }

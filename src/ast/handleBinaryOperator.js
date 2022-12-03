@@ -81,7 +81,7 @@ const handleBinaryOperator = ({
   // That is, we check to see if we found 2 + 3 * 4.
   // The algorithm wants this to be ((2 + 3) * 4).
   // So we have to tell it to be (2 + (3 * 4)).
-  // In order to do this, we take the left operand ((2 + 3)) and check if it is a boolean expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
+  // In order to do this, we take the left operand ((2 + 3)) and check if it is a binary expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
   if (
     leftOperand.type === nt.BINARY_EXPR &&
     opPriority(leftOperand.operator) < opPriority(token.value)

@@ -26,8 +26,9 @@ const handleObjectOpen = require("./handleObjectOpen")
 const handleTerminal = require("./handleTerminal")
 const handleUnaryOperator = require("./handleUnaryOperator")
 const handleVariableAssignment = require("./handleVariableAssignment")
-const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
 const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
+const leftSiblingIsCallable = require("./leftSiblingIsCallable.js")
+const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -191,12 +192,6 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Function call
-    if (tokenType === tt.VAR && nextTokenType === tt.PAREN_OPEN) {
-      handleFunctionCall(context)
-      continue
-    }
-
     // Object open
     if (tokenType === tt.OBJECT_OPEN) {
       handleObjectOpen(context)
@@ -206,6 +201,15 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Array open
     if (tokenType === tt.BRACKET_OPEN) {
       handleArrayOpen(context)
+      continue
+    }
+
+    // Function call, if we saw an open paren and the left sibling is callable
+    if (
+      tokenType === tt.PAREN_OPEN &&
+      leftSiblingIsCallable(currentExpressionList)
+    ) {
+      handleFunctionCall(context)
       continue
     }
 

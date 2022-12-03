@@ -103,13 +103,8 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
 
     case nt.FUNCTION_CALL: {
       let lambdaVarsRequested = []
-      const functionName = node.function.value
-      if (!isPropertyAccess && !inScope(functionName, varsInScope)) {
-        throw new Error(
-          `Function ${functionName} is not defined in the current scope.`
-        )
-      }
-      const expression = `${node.function.value}(${node.children
+      const [functionName] = walkNode({ node: node.function, varsInScope })
+      const expression = `${functionName}(${node.children
         .map((node) => {
           const [
             expression,
