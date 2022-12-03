@@ -83,6 +83,10 @@ const shouldContinueConsumingToken = ({
   if (latestCharType === ct.CT_PERIOD && charType === ct.CT_PERIOD) {
     return true
   }
+  // Pipe operator via "->"
+  if (latestCharType === ct.CT_HYPHEN && charType === ct.CT_GREATER_THAN) {
+    return true
+  }
 
   return false
 }

@@ -37,6 +37,8 @@ const getToken = (state) => {
     tokenType = tt.BOOLEAN
   } else if (value === "%[") {
     tokenType = tt.OBJECT_OPEN
+  } else if (value === "->") {
+    tokenType = tt.FORWARD_PIPE
   } else if (value === "@") {
     tokenType = tt.LAMBDA_OPEN
   } else if (value.substring(0, 3) === "<<<") {

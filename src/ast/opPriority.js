@@ -22,6 +22,8 @@ const opPriority = (operator) => {
     case ">=":
     case "<=":
       return -6
+    case "->":
+      return -7
     default:
       throw new Error(`Could not determine precedence for operator ${operator}`)
   }
