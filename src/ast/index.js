@@ -27,6 +27,7 @@ const handleTerminal = require("./handleTerminal")
 const handleUnaryOperator = require("./handleUnaryOperator")
 const handleVariableAssignment = require("./handleVariableAssignment")
 const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
+const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -177,6 +178,16 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Variable assignment
     if (tokenType === tt.VAR && nextTokenType === tt.ASSIGNMENT) {
       handleVariableAssignment(context)
+      continue
+    }
+
+    // Weak variable assignment (weak a = "b")
+    if (
+      tokenType === tt.WEAK &&
+      nextTokenType === tt.VAR &&
+      thirdTokenType === tt.ASSIGNMENT
+    ) {
+      handleWeakVariableAssignment(context)
       continue
     }
 

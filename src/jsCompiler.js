@@ -14,21 +14,25 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   let lambdaVarsRequested = []
   if (nodes.length === 0) return ""
   const thisBlockVars = {
-    lets: [...varsInScope.lets],
+    weaks: [...varsInScope.weaks],
     consts: [...varsInScope.consts],
   }
   const childStrings = []
   for (const node of nodes) {
     // For function declarations, make the name available to siblings
     if (node.type === nt.FUNCTION_DECLARATION) {
-      thisBlockVars.lets.push(node.name)
+      thisBlockVars.weaks.push(node.name)
     }
     const [childString, { lambdaVarsRequested: childLambdaVarsRequested }] =
       walkNode({ node, varsInScope: thisBlockVars })
 
     // For assignments, make the variable available to siblings but not to self
     if (node.type === nt.ASSIGNMENT) {
-      thisBlockVars.consts.push(node.variable)
+      if (node.weak) {
+        thisBlockVars.weaks.push(node.variable)
+      } else {
+        thisBlockVars.consts.push(node.variable)
+      }
     }
     lambdaVarsRequested = [...lambdaVarsRequested, ...childLambdaVarsRequested]
     childStrings.push(childString)
@@ -51,10 +55,13 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
 const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })[0]
 
 const inScope = (theVar, varsInScope) =>
-  varsInScope.lets.includes(theVar) || varsInScope.consts.includes(theVar)
+  varsInScope.weaks.includes(theVar) || varsInScope.consts.includes(theVar)
 
 const inScopeAsConstant = (theVar, varsInScope) =>
   varsInScope.consts.includes(theVar)
+
+const inScopeAsWeak = (theVar, varsInScope) =>
+  varsInScope.weaks.includes(theVar)
 
 const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
   debugConsole.log("--------------------------")
@@ -76,6 +83,11 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
       const consts = [...varsInScope.consts]
       for (const { type, value } of node.args) {
         if (type === nt.IDENTIFIER) {
+          if (inScope(value, varsInScope)) {
+            throw new Error(
+              `Cannot use "${value}" as a function argument because it is already defined in the current scope.`
+            )
+          }
           consts.push(value)
         }
       }
@@ -312,7 +324,17 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
         node: node.children[0],
         varsInScope,
       })
-      return [`const ${node.variable}=${rightSide}`, context]
+
+      let expressionString
+      if (inScopeAsWeak(node.variable, varsInScope)) {
+        expressionString = `${node.variable}=${rightSide}`
+      } else if (node.weak) {
+        expressionString = `let ${node.variable}=${rightSide}`
+      } else {
+        expressionString = `const ${node.variable}=${rightSide}`
+      }
+
+      return [expressionString, context]
     }
 
     case nt.CONCISE_LAMBDA_ARGUMENT:
@@ -355,7 +377,7 @@ const jsCompile = ({ ast, debug, jsGlobals }) => {
   debugConsole.dir(["ast", ast], { depth: null })
   let [result] = walkNode({
     node: ast,
-    varsInScope: { lets: [], consts: [...jsGlobals] },
+    varsInScope: { weaks: [], consts: [...jsGlobals] },
   })
   result = defineHelpers(result)
   debugConsole.log("result:\n", result)

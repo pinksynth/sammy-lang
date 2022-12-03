@@ -1,9 +1,11 @@
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const handleVariableAssignment = ({
+const handleWeakVariableAssignment = ({
   consumeExtra,
   currentScope,
+  nextToken,
+  nextTokenType,
   node,
   pushToExpressionList,
   scopes,
@@ -16,7 +18,7 @@ const handleVariableAssignment = ({
     )
   ) {
     throw new Error(
-      `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`
+      `Unexpected weak assigment on line ${nextToken.lineNumberStart}: ${nextToken.value}`
     )
   }
 
@@ -25,14 +27,15 @@ const handleVariableAssignment = ({
     children: [],
     parent: node,
     type: nt.ASSIGNMENT,
-    variable: token.value,
-    weak: false,
+    variable: nextToken.value,
+    weak: true,
   }
   pushToExpressionList(child)
   setNode(child)
 
-  // For normal var assignments, we have consumed both the identifier and the operator, so we'll manually increment the tokens by an extra 1.
+  // For weak var assignments, we have consumed the "weak" keyword, the identifier, and the operator, so we'll manually increment the tokens by an extra 2.
+  consumeExtra()
   consumeExtra()
 }
 
-module.exports = handleVariableAssignment
+module.exports = handleWeakVariableAssignment
