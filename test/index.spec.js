@@ -1,9 +1,9 @@
 /* global test expect */
-const { getAstFromTokens } = require("./ast")
 const fixture1 = require("./fixtures/1")
-const { compile } = require("./index")
-const jsCompile = require("./jsCompiler")
-const lex = require("./lexer")
+const { getAstFromTokens } = require("../src/ast")
+const { compile } = require("../src/index")
+const jsCompile = require("../src/jsCompiler")
+const lex = require("../src/lexer")
 
 const jsGlobals = ["console", "Math"]
 
