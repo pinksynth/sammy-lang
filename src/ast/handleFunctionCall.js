@@ -1,7 +1,13 @@
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const handleFunctionCall = ({ callableLeftSibling, scopes, setNode }) => {
+const handleFunctionCall = ({
+  appendedScopes,
+  callableLeftSibling,
+  scopes,
+  setNode,
+}) => {
+  for (const scope of appendedScopes) scopes.push(scope)
   // Note that if callableLeftSibling involved drilling into any binary expression scopes, those have already been pushed.
   scopes.push(st.FUNCTION_CALL_ARGS)
 

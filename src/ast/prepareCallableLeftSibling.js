@@ -19,8 +19,7 @@ const getCallable = (leftSiblingExpression, appendedScopes = []) => {
   // For binary expressions, keep recursing through the righthand side to see if we find a callable.
   const right = leftSiblingExpression.right
 
-  if (right && right.type === nt.BINARY_EXPR) {
-    // if (right) {
+  if (right) {
     appendedScopes.push(st.BINARY_OPERATOR)
     return getCallable(right, appendedScopes)
   } else {
@@ -29,22 +28,17 @@ const getCallable = (leftSiblingExpression, appendedScopes = []) => {
   }
 }
 
-const prepareCallableLeftSibling = ({ currentExpressionList, scopes }) => {
-  if (!currentExpressionList) return false
+const prepareCallableLeftSibling = (currentExpressionList) => {
+  if (!currentExpressionList) return [false, []]
 
   const leftSiblingExpression =
     currentExpressionList[currentExpressionList.length - 1]
 
-  if (!leftSiblingExpression) return false
+  if (!leftSiblingExpression) return [false, []]
 
   const [callee, appendedScopes] = getCallable(leftSiblingExpression)
-  // debugConsole.log("callee", callee)
-  // debugConsole.log("appendedScopes", appendedScopes)
-  if (callee) {
-    for (const scope of appendedScopes) scopes.push(scope)
-  }
 
-  return callee
+  return [callee, appendedScopes]
 }
 
 module.exports = prepareCallableLeftSibling

@@ -84,6 +84,14 @@ const getAstFromTokens = ({ tokens, debug }) => {
       thirdTokenType = thirdToken && thirdToken.tokenType
     const currentScope = scopes[scopes.length - 1]
 
+    debugConsole.log("scopes", scopes)
+    debugConsole.log(tokenType, token.value)
+    // debugConsole.log(
+    //   "active node",
+    //   `${node.type}: ${node.value || node.operator || ""}`
+    // )
+    // debugConsole.dir({ ast }, { depth: null })
+
     // TODO: Clean up this currentExpressionList stuff, the pushToExpressionList stuff, and any nodes with "children" that should use another name for descendants.
     currentExpressionList = getCurrentExpressionListForScope({
       currentScope,
@@ -97,15 +105,15 @@ const getAstFromTokens = ({ tokens, debug }) => {
       node,
       token,
     })
-    const callableLeftSibling = prepareCallableLeftSibling({
-      currentExpressionList,
-      scopes,
-    })
+    const [callableLeftSibling, appendedScopes] = prepareCallableLeftSibling(
+      currentExpressionList
+    )
 
     // debugConsole.log("currentExpressionList", currentExpressionList)
     // debugConsole.log("callableLeftSibling", callableLeftSibling)
 
     const context = {
+      appendedScopes,
       callableLeftSibling,
       consumeExtra,
       currentExpressionList,
@@ -122,14 +130,6 @@ const getAstFromTokens = ({ tokens, debug }) => {
       token,
       tokenType,
     }
-
-    debugConsole.log("scopes", scopes)
-    debugConsole.log(tokenType, token.value)
-    // debugConsole.log(
-    //   "active node",
-    //   `${node.type}: ${node.value || node.operator || ""}`
-    // )
-    // debugConsole.dir({ ast }, { depth: null })
 
     // Right side of "dot" can only be identifier
     if (node.type === nt.BINARY_EXPR && node.operator === ".") {
