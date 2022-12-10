@@ -63,7 +63,12 @@ const inScopeAsConstant = (theVar, varsInScope) =>
 const inScopeAsWeak = (theVar, varsInScope) =>
   varsInScope.weaks.includes(theVar)
 
-const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
+const walkNode = ({
+  node,
+  varsInScope,
+  isPropertyAccess,
+  unshiftedFirstArgFromPipe,
+}) => {
   debugConsole.log("--------------------------")
   debugConsole.log("node", node)
   debugConsole.log("varsInScope", varsInScope)
@@ -102,9 +107,13 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
     }
 
     case nt.FUNCTION_CALL: {
+      const args = [...node.children]
+      if (unshiftedFirstArgFromPipe) {
+        args.unshift(unshiftedFirstArgFromPipe)
+      }
       let lambdaVarsRequested = []
       const [functionName] = walkNode({ node: node.function, varsInScope })
-      const expression = `${functionName}(${node.children
+      const expression = `${functionName}(${args
         .map((node) => {
           const [
             expression,
@@ -209,6 +218,22 @@ const walkNode = ({ node, varsInScope, isPropertyAccess }) => {
     }
 
     case nt.BINARY_EXPR: {
+      if (node.operator === "->") {
+        if (node.right.type !== nt.FUNCTION_CALL) {
+          // TODO: Should this check happen in lexer? Either way we should describe the failing token with line/column number.
+          throw new Error(
+            `Attempted to pipe into an expression which is not a function call: ${node.right.type}`
+          )
+        }
+
+        return walkNode({
+          node: node.right,
+          varsInScope,
+          isPropertyAccess: node.operator === ".",
+          unshiftedFirstArgFromPipe: node.left,
+        })
+      }
+
       const [left, { lambdaVarsRequested: leftLambdaVarsRequested }] = walkNode(
         { node: node.left, varsInScope }
       )

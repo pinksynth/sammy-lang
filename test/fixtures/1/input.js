@@ -25,6 +25,15 @@ function multiply(b c) {
   b * c
 }
 
+# Expressions may be piped into function calls
+square = @{ $1 * $1 }
+subtract = @{ $1 - $2 }
+
+2
+-> multiply(3)
+-> square()
+-> subtract(5)
+
 <<<
   Functions support two concise syntaxes.
   This one uses declared variables.

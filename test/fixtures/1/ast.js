@@ -90,6 +90,72 @@ const ast = {
     {
       children: [
         {
+          args: [],
+          children: [
+            {
+              left: { type: "CONCISE_LAMBDA_ARGUMENT", value: "$1" },
+              operator: "*",
+              type: "BINARY_EXPR",
+              right: { type: "CONCISE_LAMBDA_ARGUMENT", value: "$1" },
+            },
+          ],
+          type: "LAMBDA",
+        },
+      ],
+      type: "ASSIGNMENT",
+      variable: "square",
+      weak: false,
+    },
+    {
+      children: [
+        {
+          args: [],
+          children: [
+            {
+              left: { type: "CONCISE_LAMBDA_ARGUMENT", value: "$1" },
+              operator: "-",
+              type: "BINARY_EXPR",
+              right: { type: "CONCISE_LAMBDA_ARGUMENT", value: "$2" },
+            },
+          ],
+          type: "LAMBDA",
+        },
+      ],
+      type: "ASSIGNMENT",
+      variable: "subtract",
+      weak: false,
+    },
+    {
+      left: {
+        left: {
+          left: { type: "LITERAL_NUMBER", value: "2" },
+          operator: "->",
+          type: "BINARY_EXPR",
+          right: {
+            type: "FUNCTION_CALL",
+            function: { type: "IDENTIFIER", value: "multiply" },
+            children: [{ type: "LITERAL_NUMBER", value: "3" }],
+          },
+        },
+        operator: "->",
+        type: "BINARY_EXPR",
+        right: {
+          type: "FUNCTION_CALL",
+          function: { type: "IDENTIFIER", value: "square" },
+          children: [],
+        },
+      },
+      operator: "->",
+      type: "BINARY_EXPR",
+      right: {
+        type: "FUNCTION_CALL",
+        function: { type: "IDENTIFIER", value: "subtract" },
+        children: [{ type: "LITERAL_NUMBER", value: "5" }],
+      },
+    },
+    {
+      children: [
+        {
           args: [{ type: "IDENTIFIER", value: "x" }],
           children: [
             {
@@ -196,10 +262,7 @@ const ast = {
                     left: {
                       operator: "-",
                       type: "UNARY_EXPRESSION",
-                      operand: {
-                        type: "CONCISE_LAMBDA_ARGUMENT",
-                        value: "$1",
-                      },
+                      operand: { type: "CONCISE_LAMBDA_ARGUMENT", value: "$1" },
                     },
                     operator: "%",
                     type: "BINARY_EXPR",
