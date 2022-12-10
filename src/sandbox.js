@@ -54,5 +54,14 @@ mood = if
   { "excellent" } else { mood }
 `,
   debug: true,
-  jsGlobals: ["console", "Math", "foo", "baz"],
+  jsGlobals: [
+    "console",
+    "Math",
+    "multiply",
+    "square",
+    "subtract",
+    "foo",
+    "baz",
+  ],
+  writeToFiles: true,
 })

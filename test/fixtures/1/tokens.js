@@ -772,10 +772,7 @@ const tokens = [
   {
     tokenType: "COMMENT",
     value:
-      "<<<\n" +
-      "  Functions support two concise syntaxes.\n" +
-      "  This one uses declared variables.\n" +
-      ">>>",
+      "<<<\n  Functions support two concise syntaxes.\n  This one uses declared variables.\n>>>",
     lineNumberStart: 28,
     columnNumberStart: 1,
     lineNumberEnd: 31,
