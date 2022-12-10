@@ -2,7 +2,7 @@ const tt = require("../tokenTypes")
 const nt = require("./nodeTypes")
 
 // Gets a terminal node from primitive tokens such as booleans, numbers, or strings.
-const getTerminalNode = ({ value, tokenType }) => {
+const getTerminalNode = ({ parent, token: { value, tokenType } }) => {
   let type,
     nodeValue = value
   switch (tokenType) {
@@ -38,6 +38,7 @@ const getTerminalNode = ({ value, tokenType }) => {
       throw new Error(`Invalid type ${tokenType}`)
   }
   return {
+    parent,
     type,
     value: nodeValue,
   }

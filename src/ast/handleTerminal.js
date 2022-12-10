@@ -1,8 +1,14 @@
 const getTerminalNode = require("./getTerminalNode")
 const st = require("./scopeTypes")
 
-const handleTerminal = ({ currentScope, pop, pushToExpressionList, token }) => {
-  pushToExpressionList(getTerminalNode(token))
+const handleTerminal = ({
+  currentScope,
+  node,
+  pop,
+  pushToExpressionList,
+  token,
+}) => {
+  pushToExpressionList(getTerminalNode({ parent: node, token }))
 
   if (
     currentScope === st.ASSIGNMENT ||

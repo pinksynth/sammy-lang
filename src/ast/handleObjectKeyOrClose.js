@@ -6,6 +6,7 @@ const handleObjectKeyOrClose = ({
   consumeExtra,
   nextToken,
   nextTokenType,
+  node,
   pop,
   pushToExpressionList,
   swapScope,
@@ -14,7 +15,7 @@ const handleObjectKeyOrClose = ({
 }) => {
   if (tt.TERMINALS.includes(tokenType)) {
     if (nextTokenType === tt.COLON) {
-      pushToExpressionList(getTerminalNode(token))
+      pushToExpressionList(getTerminalNode({ parent: node, token }))
       swapScope(st.OBJECT_VALUE)
       // We have consumed the key as well as the colon, so increment the tokens by an extra one.
       consumeExtra()

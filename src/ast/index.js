@@ -7,6 +7,7 @@ const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
 const getCurrentExpressionListForScope = require("./getCurrentExpressionListForScope")
+const prepareCallableLeftSibling = require("./prepareCallableLeftSibling.js")
 const getPushToExpressionListFn = require("./getPushToExpressionListFn")
 const handleArrayOpen = require("./handleArrayOpen")
 const handleBinaryOperator = require("./handleBinaryOperator")
@@ -27,7 +28,6 @@ const handleTerminal = require("./handleTerminal")
 const handleUnaryOperator = require("./handleUnaryOperator")
 const handleVariableAssignment = require("./handleVariableAssignment")
 const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
-const leftSiblingIsCallable = require("./leftSiblingIsCallable.js")
 const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
 
 const getAstFromTokens = ({ tokens, debug }) => {
@@ -43,7 +43,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
   let node = ast
 
-  // As we consume tokens, we use this to set the current to descendant or ancestor nodes based on scope changes.
+  // As we consume tokens, we use this to set the current node to descendant or ancestor nodes based on scope changes, such as entering an "if" condition, or leaving a function body.
   const setNode = (newNode) => {
     node = newNode
   }
@@ -52,9 +52,8 @@ const getAstFromTokens = ({ tokens, debug }) => {
   const pop = () => {
     scopes.pop()
     const currentScope = scopes[scopes.length - 1]
-    const tmp = node
-    node = node.parent
-    delete tmp.parent
+
+    setNode(node.parent)
 
     // For right-hand of assignment, binary operators, and unary operators, pop the stack until we reach a scope which must be explicitly closed.
     if (
@@ -98,8 +97,16 @@ const getAstFromTokens = ({ tokens, debug }) => {
       node,
       token,
     })
+    const callableLeftSibling = prepareCallableLeftSibling({
+      currentExpressionList,
+      scopes,
+    })
+
+    // debugConsole.log("currentExpressionList", currentExpressionList)
+    // debugConsole.log("callableLeftSibling", callableLeftSibling)
 
     const context = {
+      callableLeftSibling,
       consumeExtra,
       currentExpressionList,
       currentScope,
@@ -117,7 +124,12 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     debugConsole.log("scopes", scopes)
-    debugConsole.log(token.value, tokenType)
+    debugConsole.log(tokenType, token.value)
+    // debugConsole.log(
+    //   "active node",
+    //   `${node.type}: ${node.value || node.operator || ""}`
+    // )
+    // debugConsole.dir({ ast }, { depth: null })
 
     // Right side of "dot" can only be identifier
     if (node.type === nt.BINARY_EXPR && node.operator === ".") {
@@ -205,10 +217,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     }
 
     // Function call, if we saw an open paren and the left sibling is callable
-    if (
-      tokenType === tt.PAREN_OPEN &&
-      leftSiblingIsCallable(currentExpressionList)
-    ) {
+    if (tokenType === tt.PAREN_OPEN && callableLeftSibling) {
       handleFunctionCall(context)
       continue
     }
@@ -280,7 +289,23 @@ const getAstFromTokens = ({ tokens, debug }) => {
   return ast
 }
 
+const deleteParents = (node) => {
+  if (Array.isArray(node)) {
+    return node.map(deleteParents)
+  } else if (typeof node === "object") {
+    const obj = {}
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "parent") continue
+
+      obj[key] = deleteParents(value)
+    }
+    return obj
+  }
+  return node
+}
+
 module.exports = {
   ...st,
+  deleteParents,
   getAstFromTokens,
 }

@@ -1,25 +1,26 @@
-const getCurrentExpressionListForScope = require("./getCurrentExpressionListForScope")
-const getTerminalNode = require("./getTerminalNode")
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const handleFunctionCall = ({
-  currentExpressionList,
-  node,
-  pushToExpressionList,
-  scopes,
-  setNode,
-}) => {
+const handleFunctionCall = ({ callableLeftSibling, scopes, setNode }) => {
+  // Note that if callableLeftSibling involved drilling into any binary expression scopes, those have already been pushed.
   scopes.push(st.FUNCTION_CALL_ARGS)
-  const functionIdentifier = currentExpressionList.pop()
-  const child = {
-    type: nt.FUNCTION_CALL,
-    function: functionIdentifier,
-    children: [],
-    parent: node,
+
+  // There might be a prettier way to do this. But for now, we take the callable left sibling and mutate it into the actual function call node, while preserving its properties and putting them in a "callee" object.
+  const callee = {
+    ...callableLeftSibling,
+    parent: callableLeftSibling,
   }
-  pushToExpressionList(child)
-  setNode(child)
+
+  delete callableLeftSibling.type
+  delete callableLeftSibling.value
+  delete callableLeftSibling.left
+  delete callableLeftSibling.right
+  delete callableLeftSibling.operator
+  callableLeftSibling.type = nt.FUNCTION_CALL
+  callableLeftSibling.function = callee
+  callableLeftSibling.children = []
+
+  setNode(callableLeftSibling)
 }
 
 module.exports = handleFunctionCall

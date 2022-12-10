@@ -4,7 +4,7 @@ const tt = require("../tokenTypes")
 
 const handleLambdaArgs = ({ node, swapScope, token, tokenType }) => {
   if (tt.TERMINALS.includes(tokenType)) {
-    node.args.push(getTerminalNode(token))
+    node.args.push(getTerminalNode({ parent: node, token }))
 
     return
   } else if (tokenType === tt.CURLY_OPEN) {

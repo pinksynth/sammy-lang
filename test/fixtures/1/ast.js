@@ -117,6 +117,33 @@ const ast = {
       children: [{ type: "LITERAL_NUMBER", value: "3" }],
     },
     {
+      left: {
+        type: "FUNCTION_CALL",
+        function: {
+          left: { type: "IDENTIFIER", value: "foo" },
+          operator: ".",
+          type: "BINARY_EXPR",
+          right: { type: "IDENTIFIER", value: "bar" },
+        },
+        children: [],
+      },
+      operator: "*",
+      type: "BINARY_EXPR",
+      right: {
+        type: "FUNCTION_CALL",
+        function: {
+          left: { type: "IDENTIFIER", value: "baz" },
+          operator: ".",
+          type: "BINARY_EXPR",
+          right: { type: "IDENTIFIER", value: "quux" },
+        },
+        children: [
+          { type: "IDENTIFIER", value: "foo" },
+          { type: "IDENTIFIER", value: "my_range" },
+        ],
+      },
+    },
+    {
       children: [
         {
           args: [],

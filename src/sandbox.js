@@ -34,6 +34,7 @@ function multiply(b c) {
 >>>
 is_even = @ x { x % 2 == 0 }
 is_even(3)
+foo.bar() * baz.quux(foo my_range)
 
 # This one uses implicit variables following the pattern $1, $2, $3...
 divide = @{ $1 / $2 }
@@ -53,5 +54,5 @@ mood = if
   { "excellent" } else { mood }
 `,
   debug: true,
-  jsGlobals: ["console", "Math", "foo"],
+  jsGlobals: ["console", "Math", "foo", "baz"],
 })
