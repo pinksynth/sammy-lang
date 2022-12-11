@@ -23,6 +23,22 @@ const ast = {
       weak: false,
     },
     {
+      variable: "name",
+      type: "ASSIGNMENT",
+      children: [
+        {
+          type: "FUNCTION_CALL",
+          function: {
+            left: { type: "IDENTIFIER", value: "name" },
+            operator: ".",
+            type: "BINARY_EXPR",
+            right: { type: "IDENTIFIER", value: "toUpperCase" },
+          },
+          children: [],
+        },
+      ],
+    },
+    {
       type: "LITERAL_ARRAY",
       children: [
         { type: "LITERAL_NUMBER", value: "1" },

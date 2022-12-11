@@ -8,6 +8,7 @@ true
 # Variables are treated as "const" by default. They cannot be rebound. But "weak" variables can be rebound.
 weak name = "Sammy"
 name = "Jimbo"
+name = name.toUpperCase()
 
 # Arrays are space-separated
 [1 2 3 * 4 5]

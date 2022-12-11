@@ -27,7 +27,7 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
       walkNode({ node, varsInScope: thisBlockVars })
 
     // For assignments, make the variable available to siblings but not to self
-    if (node.type === nt.ASSIGNMENT) {
+    if (node.type === nt.ASSIGNMENT && !inScope(node.variable, thisBlockVars)) {
       if (node.weak) {
         thisBlockVars.weaks.push(node.variable)
       } else {

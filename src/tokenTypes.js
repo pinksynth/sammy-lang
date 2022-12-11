@@ -50,11 +50,6 @@ const tt = {
     t.OPERATOR_INFIX,
     t.HYPHEN,
   ],
-  //
-  //
-  // FIXME: SAMMY! Some tokens, such as "-", can be binary or unary operators depending on their context. I think that the only context necessary is to determine whether there is a left sibling node.
-  //
-  //
   UNARY_OPERATORS: [t.HYPHEN, t.BANG],
 }
 

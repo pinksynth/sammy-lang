@@ -17,11 +17,19 @@ const getCallable = (leftSiblingExpression, appendedScopes = []) => {
   }
 
   // For binary expressions, keep recursing through the righthand side to see if we find a callable.
-  const right = leftSiblingExpression.right
+  let siblingDescendant, scope
+  if (leftSiblingExpression.type === nt.BINARY_EXPR) {
+    siblingDescendant = leftSiblingExpression.right
+    scope = st.ASSIGNMENT
+  } else if (leftSiblingExpression.type === nt.ASSIGNMENT) {
+    // FIXME: Assignments should have one descendant under a "value" property, not a "children" list.
+    siblingDescendant = leftSiblingExpression.children[0]
+    scope = st.BINARY_OPERATOR
+  }
 
-  if (right) {
-    appendedScopes.push(st.BINARY_OPERATOR)
-    return getCallable(right, appendedScopes)
+  if (siblingDescendant) {
+    appendedScopes.push(scope)
+    return getCallable(siblingDescendant, appendedScopes)
   } else {
     // Left sibling in current scope is not callable.
     return [false, []]
