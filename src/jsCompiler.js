@@ -172,6 +172,21 @@ const walkNode = ({
       ]
     }
 
+    case nt.TRY_EXPR: {
+      let lambdaVarsRequested = []
+      const [body, { lambdaVarsRequested: bodyLambdaVarsRequested }] =
+        mapBlockScope({
+          nodes: node.children,
+          assignmentStr: "tmp=",
+          varsInScope,
+        })
+      lambdaVarsRequested = [...lambdaVarsRequested, ...bodyLambdaVarsRequested]
+      return [
+        `(()=>{let tmp;try{${body}}catch(_){}return tmp})()`,
+        { lambdaVarsRequested },
+      ]
+    }
+
     case nt.LITERAL_OBJECT: {
       let lambdaVarsRequested = []
       const expression = `({${node.keys
@@ -380,6 +395,9 @@ const walkNode = ({
     }
 
     default:
+      throw new Error(
+        `AST node type "${node.type}" has not been implemented for the jsCompiler.`
+      )
       break
   }
 }

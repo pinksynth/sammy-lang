@@ -29,6 +29,8 @@ const handleUnaryOperator = require("./handleUnaryOperator")
 const handleVariableAssignment = require("./handleVariableAssignment")
 const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
 const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
+const handleKeywordTry = require("./handleKeywordTry")
+const handleKeywordEnd = require("./handleKeywordEnd")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -164,6 +166,12 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
+    // Opening of try statement
+    if (tokenType === tt.TRY) {
+      handleKeywordTry(context)
+      continue
+    }
+
     // Opening of lambda function with @
     if (tokenType === tt.LAMBDA_OPEN) {
       handleLambdaOpen(context)
@@ -225,6 +233,12 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Open paren (expression group)
     if (tokenType === tt.PAREN_OPEN) {
       handleGenericExpressionOpen(context)
+      continue
+    }
+
+    // Opening of try statement
+    if (tokenType === tt.END) {
+      handleKeywordEnd(context)
       continue
     }
 

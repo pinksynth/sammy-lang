@@ -18,6 +18,7 @@ const nt = {
   LITERAL_UNDEFINED: /*       */ "LITERAL_UNDEFINED",
   ROOT: /*                    */ "ROOT",
   TERNARY_EXPR: /*            */ "TERNARY_EXPR",
+  TRY_EXPR: /*                */ "TRY_EXPR",
   UNARY_EXPRESSION: /*        */ "UNARY_EXPRESSION",
 }
 

@@ -385,6 +385,39 @@ const ast = {
       variable: "mood",
       weak: false,
     },
+    {
+      children: [
+        {
+          children: [
+            {
+              left: {
+                left: { type: "IDENTIFIER", value: "foo" },
+                operator: ".",
+                type: "BINARY_EXPR",
+                right: { type: "IDENTIFIER", value: "bar" },
+              },
+              operator: "*",
+              type: "BINARY_EXPR",
+              right: {
+                type: "FUNCTION_CALL",
+                function: {
+                  left: { type: "IDENTIFIER", value: "baz" },
+                  operator: ".",
+                  type: "BINARY_EXPR",
+                  right: { type: "IDENTIFIER", value: "quux" },
+                },
+                children: [],
+              },
+            },
+          ],
+          catch: [],
+          type: "TRY_EXPR",
+        },
+      ],
+      type: "ASSIGNMENT",
+      variable: "some_var",
+      weak: false,
+    },
   ],
 }
 

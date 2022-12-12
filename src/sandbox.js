@@ -62,6 +62,9 @@ mood = if
   Math.random() > 0.9
   Math.random() < 0.1
   { "excellent" } else { mood }
+
+# Try / catch is supported as an expression
+some_var = try foo.bar * baz.quux() end
 `,
   debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],

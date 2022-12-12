@@ -14,6 +14,7 @@ const st = {
   OBJECT_KEY: /*              */ "OBJECT_KEY",
   OBJECT_VALUE: /*            */ "OBJECT_VALUE",
   ROOT: /*                    */ "ROOT",
+  TRY_BODY: /*                */ "TRY_BODY",
   UNARY_OPERATOR: /*          */ "UNARY_OPERATOR",
 }
 
