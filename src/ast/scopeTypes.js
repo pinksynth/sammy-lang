@@ -15,6 +15,8 @@ const st = {
   OBJECT_VALUE: /*            */ "OBJECT_VALUE",
   ROOT: /*                    */ "ROOT",
   TRY_BODY: /*                */ "TRY_BODY",
+  TRY_HANDLER_PATTERN: /*     */ "TRY_HANDLER_PATTERN",
+  TRY_HANDLER_BODY: /*        */ "TRY_HANDLER_BODY",
   UNARY_OPERATOR: /*          */ "UNARY_OPERATOR",
 }
 

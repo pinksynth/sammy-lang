@@ -31,6 +31,8 @@ const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
 const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
 const handleKeywordTry = require("./handleKeywordTry")
 const handleKeywordEnd = require("./handleKeywordEnd")
+const handleKeywordHandle = require("./handleKeywordHandle")
+const handleHandlerOpen = require("./handleHandlerOpen")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -169,6 +171,17 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Opening of try statement
     if (tokenType === tt.TRY) {
       handleKeywordTry(context)
+      continue
+    }
+
+    // Opening of handler within "try" node
+    if (tokenType === tt.HANDLE) {
+      handleKeywordHandle(context)
+      continue
+    }
+
+    if (currentScope === st.TRY_HANDLER_PATTERN && tokenType === tt.COLON) {
+      handleHandlerOpen(context)
       continue
     }
 

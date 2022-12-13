@@ -33,8 +33,8 @@ const getToken = (state) => {
     tokenType = tt.ELSE
   } else if (value === "try") {
     tokenType = tt.TRY
-  } else if (value === "catch") {
-    tokenType = tt.CATCH
+  } else if (value === "handle") {
+    tokenType = tt.HANDLE
   } else if (value === "end") {
     tokenType = tt.END
   } else if (value === "function") {

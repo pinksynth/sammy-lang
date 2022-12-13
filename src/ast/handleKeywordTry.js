@@ -6,7 +6,8 @@ const handleKeywordTry = ({ node, pushToExpressionList, scopes, setNode }) => {
 
   const child = {
     children: [],
-    catch: [],
+    handlers: [],
+    handlerPatterns: [],
     parent: node,
     type: nt.TRY_EXPR,
   }

@@ -19,6 +19,7 @@ const nt = {
   ROOT: /*                    */ "ROOT",
   TERNARY_EXPR: /*            */ "TERNARY_EXPR",
   TRY_EXPR: /*                */ "TRY_EXPR",
+  TRY_HANDLER: /*             */ "TRY_HANDLER",
   UNARY_EXPRESSION: /*        */ "UNARY_EXPRESSION",
 }
 
