@@ -35,6 +35,7 @@ const handleKeywordHandle = require("./handleKeywordHandle")
 const handleHandlerOpen = require("./handleHandlerOpen")
 const handleStructDefinition = require("./handleStructDefinition")
 const handleStructLiteral = require("./handleStructLiteral")
+const handleEnumDefinition = require("./handleEnumDefinition")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -144,6 +145,16 @@ const getAstFromTokens = ({ tokens, debug }) => {
           `Syntax error on line ${token.lineNumberStart}. Unexpected token "${token.value}"`
         )
       }
+    }
+
+    // Enum definition
+    if (
+      tokenType === tt.ENUM_DEFINITION &&
+      nextTokenType === tt.VAR &&
+      thirdTokenType === tt.CURLY_OPEN
+    ) {
+      handleEnumDefinition(context)
+      continue
     }
 
     // Struct definition

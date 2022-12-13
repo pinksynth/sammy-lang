@@ -2,6 +2,7 @@ const st = {
   ARRAY: /*                   */ "ARRAY",
   ASSIGNMENT: /*              */ "ASSIGNMENT",
   BINARY_OPERATOR: /*         */ "BINARY_OPERATOR",
+  ENUM_DEFINITION: /*         */ "ENUM_DEFINITION",
   FUNCTION_CALL_ARGS: /*      */ "FUNCTION_CALL_ARGS",
   FUNCTION_DEC_ARGS: /*       */ "FUNCTION_DEC_ARGS",
   FUNCTION_DEC_BODY: /*       */ "FUNCTION_DEC_BODY",

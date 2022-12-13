@@ -3,6 +3,7 @@ const st = require("./scopeTypes")
 const handleCloseCurly = ({ currentScope, pop, token }) => {
   if (
     ![
+      st.ENUM_DEFINITION,
       st.FUNCTION_DEC_BODY,
       st.IF_BODY,
       st.IF_ELSE,

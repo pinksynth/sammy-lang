@@ -15,6 +15,7 @@ const t = {
   DOT: /*                      */ "DOT",
   ELSE: /*                     */ "ELSE",
   END: /*                      */ "END",
+  ENUM_DEFINITION: /*          */ "ENUM_DEFINITION",
   FORWARD_PIPE: /*             */ "FORWARD_PIPE",
   FUNCTION: /*                 */ "FUNCTION",
   HANDLE: /*                   */ "HANDLE",

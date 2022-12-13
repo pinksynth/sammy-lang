@@ -47,6 +47,16 @@ const getPushToExpressionListFn =
       )
     }
 
+    if (
+      scope === st.ENUM_DEFINITION &&
+      childNode.type !== nt.IDENTIFIER &&
+      childNode.type !== nt.ASSIGNMENT
+    ) {
+      throw new Error(
+        `Enum definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside enum "${node.name}"`
+      )
+    }
+
     if (scope === st.TRY_HANDLER_PATTERN) {
       node.handlerPatterns.push(childNode)
       return
