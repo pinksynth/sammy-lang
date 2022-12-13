@@ -5,10 +5,10 @@ const handleObjectOpen = ({ node, pushToExpressionList, scopes, setNode }) => {
   scopes.push(st.OBJECT_KEY)
 
   const child = {
+    type: nt.LITERAL_OBJECT,
     keys: [],
     values: [],
     parent: node,
-    type: nt.LITERAL_OBJECT,
   }
   pushToExpressionList(child)
   setNode(child)

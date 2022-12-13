@@ -15,9 +15,9 @@ const handleStructDefinition = ({
       `Cannot declare struct "${nextToken.value}" in scope ${currentScope}. Structs may only be declared in the root scope.`
     )
   }
-  scopes.push(st.STRUCT)
+  scopes.push(st.STRUCT_DEFINITION)
   const child = {
-    type: nt.STRUCT,
+    type: nt.STRUCT_DEFINITION,
     name: nextToken.value,
     children: [],
     parent: node,

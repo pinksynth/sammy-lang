@@ -16,7 +16,7 @@ const handleVariableAssignment = ({
       st.IF_BODY,
       st.LAMBDA_BODY,
       st.ROOT,
-      st.STRUCT,
+      st.STRUCT_DEFINITION,
     ].includes(currentScope)
   ) {
     throw new Error(

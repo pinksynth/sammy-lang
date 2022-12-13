@@ -77,6 +77,7 @@ const ast = {
       ],
     },
     {
+      type: "LITERAL_OBJECT",
       keys: [
         { type: "IDENTIFIER", value: "foo" },
         { type: "IDENTIFIER", value: "baz" },
@@ -85,7 +86,6 @@ const ast = {
         { type: "LITERAL_STRING", value: '"bar"' },
         { type: "IDENTIFIER", value: "a" },
       ],
-      type: "LITERAL_OBJECT",
     },
     {
       args: [
@@ -475,7 +475,7 @@ const ast = {
       weak: false,
     },
     {
-      type: "STRUCT",
+      type: "STRUCT_DEFINITION",
       name: "MyStruct",
       children: [
         { type: "IDENTIFIER", value: "foo" },
@@ -486,6 +486,18 @@ const ast = {
           variable: "baz",
           weak: false,
         },
+      ],
+    },
+    {
+      type: "LITERAL_STRUCT",
+      structType: "MyStruct",
+      keys: [
+        { type: "IDENTIFIER", value: "foo" },
+        { type: "IDENTIFIER", value: "bar" },
+      ],
+      values: [
+        { type: "LITERAL_STRING", value: '"nice"' },
+        { type: "LITERAL_NUMBER", value: "420" },
       ],
     },
   ],

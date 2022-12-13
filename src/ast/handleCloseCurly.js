@@ -7,7 +7,7 @@ const handleCloseCurly = ({ currentScope, pop, token }) => {
       st.IF_BODY,
       st.IF_ELSE,
       st.LAMBDA_BODY,
-      st.STRUCT,
+      st.STRUCT_DEFINITION,
     ].includes(currentScope)
   ) {
     throw new Error(

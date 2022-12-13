@@ -80,5 +80,7 @@ struct MyStruct {
   bar
   baz = "default key"
 }
+
+%MyStruct[foo: "nice", bar: 420]
 `
 module.exports = input

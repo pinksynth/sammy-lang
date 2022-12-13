@@ -34,6 +34,7 @@ const handleKeywordEnd = require("./handleKeywordEnd")
 const handleKeywordHandle = require("./handleKeywordHandle")
 const handleHandlerOpen = require("./handleHandlerOpen")
 const handleStructDefinition = require("./handleStructDefinition")
+const handleStructLiteral = require("./handleStructLiteral")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -147,11 +148,20 @@ const getAstFromTokens = ({ tokens, debug }) => {
 
     // Struct definition
     if (
-      tokenType === tt.STRUCT &&
+      tokenType === tt.STRUCT_DEFINITION &&
       nextTokenType === tt.VAR &&
       thirdTokenType === tt.CURLY_OPEN
     ) {
       handleStructDefinition(context)
+      continue
+    }
+
+    if (
+      token.value === "%" &&
+      nextTokenType === tt.VAR &&
+      thirdTokenType === tt.BRACKET_OPEN
+    ) {
+      handleStructLiteral(context)
       continue
     }
 

@@ -38,7 +38,7 @@ const getPushToExpressionListFn =
     }
 
     if (
-      scope === st.STRUCT &&
+      scope === st.STRUCT_DEFINITION &&
       childNode.type !== nt.IDENTIFIER &&
       childNode.type !== nt.ASSIGNMENT
     ) {
