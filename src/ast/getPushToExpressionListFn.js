@@ -1,3 +1,4 @@
+const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
 const getPushToExpressionListFn =
@@ -33,6 +34,16 @@ const getPushToExpressionListFn =
     ) {
       throw new Error(
         `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected a colon to open an error handler.`
+      )
+    }
+
+    if (
+      scope === st.STRUCT &&
+      childNode.type !== nt.IDENTIFIER &&
+      childNode.type !== nt.ASSIGNMENT
+    ) {
+      throw new Error(
+        `Struct definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside struct "${node.name}"`
       )
     }
 

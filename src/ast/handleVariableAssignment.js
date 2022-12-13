@@ -11,9 +11,13 @@ const handleVariableAssignment = ({
   token,
 }) => {
   if (
-    ![st.FUNCTION_DEC_BODY, st.IF_BODY, st.LAMBDA_BODY, st.ROOT].includes(
-      currentScope
-    )
+    ![
+      st.FUNCTION_DEC_BODY,
+      st.IF_BODY,
+      st.LAMBDA_BODY,
+      st.ROOT,
+      st.STRUCT,
+    ].includes(currentScope)
   ) {
     throw new Error(
       `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`

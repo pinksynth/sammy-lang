@@ -12,7 +12,7 @@ const compile = ({ input, debug, jsGlobals, writeToFiles }) => {
   const debugConsole = debug ? console : nullConsole
 
   const write = writeToFiles
-    ? (filename, contents) => fs.writeFileSync(filename, contents)
+    ? (filename, contents) => fs.writeFileSync(filename, contents || "")
     : noop
 
   if (writeToFiles) {

@@ -474,6 +474,20 @@ const ast = {
       variable: "some_handled_var",
       weak: false,
     },
+    {
+      type: "STRUCT",
+      name: "MyStruct",
+      children: [
+        { type: "IDENTIFIER", value: "foo" },
+        { type: "IDENTIFIER", value: "bar" },
+        {
+          children: [{ type: "LITERAL_STRING", value: '"default key"' }],
+          type: "ASSIGNMENT",
+          variable: "baz",
+          weak: false,
+        },
+      ],
+    },
   ],
 }
 

@@ -76,6 +76,13 @@ handle error:
   # handle %[my_key: "foo"]:
   #   baz()
 end
+
+# Structs may be used to enforce the shape of certain pieces of data
+struct MyStruct {
+  foo
+  bar
+  baz = "default key"
+}
 `,
   debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],

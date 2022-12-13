@@ -14,6 +14,7 @@ const st = {
   OBJECT_KEY: /*              */ "OBJECT_KEY",
   OBJECT_VALUE: /*            */ "OBJECT_VALUE",
   ROOT: /*                    */ "ROOT",
+  STRUCT: /*                  */ "STRUCT",
   TRY_BODY: /*                */ "TRY_BODY",
   TRY_HANDLER_PATTERN: /*     */ "TRY_HANDLER_PATTERN",
   TRY_HANDLER_BODY: /*        */ "TRY_HANDLER_BODY",

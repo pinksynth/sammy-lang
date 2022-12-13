@@ -405,6 +405,10 @@ const walkNode = ({
       return [expressionString, context]
     }
 
+    case nt.STRUCT: {
+      return ["", { lambdaVarsRequested: [] }]
+    }
+
     case nt.CONCISE_LAMBDA_ARGUMENT:
     case nt.IDENTIFIER:
     case nt.LITERAL_BOOLEAN:

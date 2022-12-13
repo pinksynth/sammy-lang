@@ -39,6 +39,8 @@ const getToken = (state) => {
     tokenType = tt.END
   } else if (value === "function") {
     tokenType = tt.FUNCTION
+  } else if (value === "struct") {
+    tokenType = tt.STRUCT
   } else if (value === "true" || value === "false") {
     tokenType = tt.BOOLEAN
   } else if (value === "%[") {

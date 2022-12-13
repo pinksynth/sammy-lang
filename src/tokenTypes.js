@@ -28,6 +28,7 @@ const t = {
   PAREN_CLOSE: /*              */ "PAREN_CLOSE",
   PAREN_OPEN: /*               */ "PAREN_OPEN",
   STRING: /*                   */ "STRING",
+  STRUCT: /*                   */ "STRUCT",
   TRY: /*                      */ "TRY",
   UNDEFINED: /*                */ "UNDEFINED",
   VAR: /*                      */ "VAR",

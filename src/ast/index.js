@@ -33,6 +33,7 @@ const handleKeywordTry = require("./handleKeywordTry")
 const handleKeywordEnd = require("./handleKeywordEnd")
 const handleKeywordHandle = require("./handleKeywordHandle")
 const handleHandlerOpen = require("./handleHandlerOpen")
+const handleStructDefinition = require("./handleStructDefinition")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -142,6 +143,16 @@ const getAstFromTokens = ({ tokens, debug }) => {
           `Syntax error on line ${token.lineNumberStart}. Unexpected token "${token.value}"`
         )
       }
+    }
+
+    // Struct definition
+    if (
+      tokenType === tt.STRUCT &&
+      nextTokenType === tt.VAR &&
+      thirdTokenType === tt.CURLY_OPEN
+    ) {
+      handleStructDefinition(context)
+      continue
     }
 
     // Function declaration args
