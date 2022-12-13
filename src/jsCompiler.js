@@ -181,8 +181,41 @@ const walkNode = ({
           varsInScope,
         })
       lambdaVarsRequested = [...lambdaVarsRequested, ...bodyLambdaVarsRequested]
+      const patternNode = node.handlerPatterns[0]
+      const secondPatternNode = node.handlerPatterns[1]
+      if (secondPatternNode) {
+        throw new Error(
+          `Multiple error handlers are not supported for the jsCompiler (yet). Evaluating ${secondPatternNode.type}:${secondPatternNode.value}`
+        )
+      }
+
+      let errorVariable = "_",
+        catchContentsToPrint = ""
+      if (patternNode) {
+        if (patternNode.type !== nt.IDENTIFIER) {
+          throw new Error(
+            `Pattern matching is not supported for error handlers in the jsCompiler (yet). Evaluating ${patternNode.type}`
+          )
+        }
+
+        errorVariable = patternNode.value
+
+        const handlerNode = node.handlers[0]
+        const [catchContents, { lambdaVarsRequested: lamdbaVarsFromCatch }] =
+          mapBlockScope({
+            nodes: handlerNode.children,
+            assignmentStr: "tmp=",
+            varsInScope: {
+              ...varsInScope,
+              consts: [...varsInScope.consts, errorVariable],
+            },
+          })
+        catchContentsToPrint = catchContents
+        lambdaVarsRequested = [...lambdaVarsRequested, lamdbaVarsFromCatch]
+      }
+
       return [
-        `(()=>{let tmp;try{${body}}catch(_){}return tmp})()`,
+        `(()=>{let tmp;try{${body}}catch(${errorVariable}){${catchContentsToPrint}}return tmp})()`,
         { lambdaVarsRequested },
       ]
     }
