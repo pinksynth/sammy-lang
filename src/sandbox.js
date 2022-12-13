@@ -76,7 +76,6 @@ handle error:
   # handle %[my_key: "foo"]:
   #   baz()
 end
-
 `,
   debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],

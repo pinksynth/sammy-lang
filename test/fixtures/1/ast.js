@@ -410,12 +410,68 @@ const ast = {
               },
             },
           ],
-          catch: [],
+          handlers: [],
+          handlerPatterns: [],
           type: "TRY_EXPR",
         },
       ],
       type: "ASSIGNMENT",
-      variable: "some_var",
+      variable: "some_tried_var",
+      weak: false,
+    },
+    {
+      children: [
+        {
+          children: [
+            {
+              left: {
+                left: { type: "IDENTIFIER", value: "foo" },
+                operator: ".",
+                type: "BINARY_EXPR",
+                right: { type: "IDENTIFIER", value: "bar" },
+              },
+              operator: "*",
+              type: "BINARY_EXPR",
+              right: {
+                type: "FUNCTION_CALL",
+                function: {
+                  left: { type: "IDENTIFIER", value: "baz" },
+                  operator: ".",
+                  type: "BINARY_EXPR",
+                  right: { type: "IDENTIFIER", value: "quux" },
+                },
+                children: [],
+              },
+            },
+          ],
+          handlers: [
+            {
+              type: "TRY_HANDLER",
+              children: [
+                {
+                  type: "FUNCTION_CALL",
+                  function: {
+                    left: { type: "IDENTIFIER", value: "console" },
+                    operator: ".",
+                    type: "BINARY_EXPR",
+                    right: { type: "IDENTIFIER", value: "log" },
+                  },
+                  children: [{ type: "IDENTIFIER", value: "error" }],
+                },
+                {
+                  type: "FUNCTION_CALL",
+                  function: { type: "IDENTIFIER", value: "foo" },
+                  children: [],
+                },
+              ],
+            },
+          ],
+          handlerPatterns: [{ type: "IDENTIFIER", value: "error" }],
+          type: "TRY_EXPR",
+        },
+      ],
+      type: "ASSIGNMENT",
+      variable: "some_handled_var",
       weak: false,
     },
   ],

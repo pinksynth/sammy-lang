@@ -60,7 +60,18 @@ mood = if
   Math.random() < 0.1
   { "excellent" } else { mood }
 
-# Try / catch is supported as an expression
-some_var = try foo.bar * baz.quux() end
+# "Try" is supported as an expression
+some_tried_var = try foo.bar * baz.quux() end
+
+# "Try" expressions may use the "handle" keyword to handle specific kinds of errors
+some_handled_var = try
+  foo.bar * baz.quux()
+handle error:
+  console.log(error)
+  foo()
+  # NOTE: While this constructs a valid AST, we don't have pattern matching in the JS compiler yet!
+  # handle %[my_key: "foo"]:
+  #   baz()
+end
 `
 module.exports = input
