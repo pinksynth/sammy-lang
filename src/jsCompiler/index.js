@@ -1,7 +1,7 @@
 /* global console */
-const nt = require("./ast/nodeTypes")
+const nt = require("../ast/nodeTypes")
 
-const { nullConsole } = require("./debug")
+const { nullConsole } = require("../debug")
 
 let debugConsole
 
@@ -411,6 +411,10 @@ const walkNode = ({
       return ["", { lambdaVarsRequested: [] }]
     }
 
+    case nt.ENUM_DEFINITION: {
+      return ["", { lambdaVarsRequested: [] }]
+    }
+
     case nt.CONCISE_LAMBDA_ARGUMENT:
     case nt.IDENTIFIER:
     case nt.LITERAL_BOOLEAN:
@@ -437,7 +441,6 @@ const walkNode = ({
       throw new Error(
         `AST node type "${node.type}" has not been implemented for the jsCompiler.`
       )
-      break
   }
 }
 
@@ -452,6 +455,7 @@ const defineHelpers = (string) => {
 const jsCompile = ({ ast, debug, jsGlobals }) => {
   debugConsole = debug ? console : nullConsole
   debugConsole.dir(["ast", ast], { depth: null })
+
   let [result] = walkNode({
     node: ast,
     varsInScope: { weaks: [], consts: [...jsGlobals] },
