@@ -1,7 +1,8 @@
 /* global test expect */
-const fixture1 = require("./fixtures/1")
-const { getAstFromTokens, deleteParents } = require("../src/ast")
 const { compile } = require("../src/index")
+const deleteParents = require("../src/ast/deleteParents")
+const fixture1 = require("./fixtures/1")
+const getAstFromTokens = require("../src/ast")
 const jsCompile = require("../src/jsCompiler")
 const lex = require("../src/lexer")
 

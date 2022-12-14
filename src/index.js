@@ -1,9 +1,10 @@
-const { getAstFromTokens, deleteParents } = require("./ast")
+const fs = require("fs")
+
 const { nullConsole } = require("./debug")
+const deleteParents = require("./ast/deleteParents")
+const getAstFromTokens = require("./ast")
 const jsCompile = require("./jsCompiler")
 const lex = require("./lexer")
-
-const fs = require("fs")
 
 const noop = () => {}
 
