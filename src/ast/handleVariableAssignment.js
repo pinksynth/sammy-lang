@@ -12,6 +12,7 @@ const handleVariableAssignment = ({
 }) => {
   if (
     ![
+      st.ENUM_DEFINITION,
       st.FUNCTION_DEC_BODY,
       st.IF_BODY,
       st.LAMBDA_BODY,

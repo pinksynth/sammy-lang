@@ -500,6 +500,64 @@ const ast = {
         { type: "LITERAL_NUMBER", value: "420" },
       ],
     },
+    {
+      type: "ENUM_DEFINITION",
+      name: "Directions",
+      children: [
+        { type: "IDENTIFIER", value: "north" },
+        { type: "IDENTIFIER", value: "east" },
+        { type: "IDENTIFIER", value: "south" },
+        { type: "IDENTIFIER", value: "west" },
+      ],
+    },
+    {
+      left: { type: "IDENTIFIER", value: "Directions" },
+      operator: ".",
+      type: "BINARY_EXPR",
+      right: { type: "IDENTIFIER", value: "north" },
+    },
+    {
+      left: { type: "IDENTIFIER", value: "Directions" },
+      operator: ".",
+      type: "BINARY_EXPR",
+      right: { type: "IDENTIFIER", value: "east" },
+    },
+    {
+      type: "ENUM_DEFINITION",
+      name: "Suites",
+      children: [
+        {
+          children: [{ type: "LITERAL_NUMBER", value: "1" }],
+          type: "ASSIGNMENT",
+          variable: "heart",
+          weak: false,
+        },
+        {
+          children: [{ type: "LITERAL_NUMBER", value: "2" }],
+          type: "ASSIGNMENT",
+          variable: "diamond",
+          weak: false,
+        },
+        {
+          children: [{ type: "LITERAL_NUMBER", value: "3" }],
+          type: "ASSIGNMENT",
+          variable: "spade",
+          weak: false,
+        },
+        {
+          children: [{ type: "LITERAL_NUMBER", value: "4" }],
+          type: "ASSIGNMENT",
+          variable: "club",
+          weak: false,
+        },
+      ],
+    },
+    {
+      left: { type: "IDENTIFIER", value: "Suites" },
+      operator: ".",
+      type: "BINARY_EXPR",
+      right: { type: "IDENTIFIER", value: "diamond" },
+    },
   ],
 }
 

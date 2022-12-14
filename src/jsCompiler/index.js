@@ -10,8 +10,14 @@ const RANGE_FUNC = `function ${RANGE_FUNC_NAME}(t,f){if(t===f)return[t];const r=
 let shouldDefineRangeFunc = false
 
 // As we iterate through expressions in a block scope, if those expressions are assignment expressions, we must make them available to subsequent siblings.
-const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
+const mapBlockScope = ({
+  nodes,
+  assignmentStr = "return ",
+  enumDefinitions,
+  varsInScope,
+}) => {
   let lambdaVarsRequested = []
+  const thisBlockEnumDefinitions = [...enumDefinitions]
   if (nodes.length === 0) return ""
   const thisBlockVars = {
     weaks: [...varsInScope.weaks],
@@ -23,9 +29,17 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
     if (node.type === nt.FUNCTION_DECLARATION) {
       thisBlockVars.weaks.push(node.name)
     }
-    const [childString, { lambdaVarsRequested: childLambdaVarsRequested }] =
-      walkNode({ node, varsInScope: thisBlockVars })
-
+    const [
+      childString,
+      { lambdaVarsRequested: childLambdaVarsRequested, enumDefinition },
+    ] = walkNode({
+      node,
+      varsInScope: thisBlockVars,
+      enumDefinitions: thisBlockEnumDefinitions,
+    })
+    if (enumDefinition) {
+      thisBlockEnumDefinitions.push(enumDefinition)
+    }
     // For assignments, make the variable available to siblings but not to self
     if (node.type === nt.ASSIGNMENT && !inScope(node.variable, thisBlockVars)) {
       if (node.weak) {
@@ -52,7 +66,39 @@ const mapBlockScope = ({ nodes, assignmentStr = "return ", varsInScope }) => {
   return [childStrings.join(";"), { lambdaVarsRequested }]
 }
 
-const walkAssumedPrimitive = (node) => walkNode({ node, varsInScope: false })[0]
+const validEnumValues = [
+  nt.LITERAL_BOOLEAN,
+  nt.LITERAL_NUMBER,
+  nt.LITERAL_STRING,
+]
+
+const walkEnumCases = ({ children, name: enumName }) =>
+  children.map((child) => {
+    const childType = child.type
+    if (childType === nt.IDENTIFIER) {
+      const childValue = child.value
+      const id = `$__${enumName}.${childValue}`
+      return { name: childValue, assigned: false, id }
+    } else if (childType === nt.ASSIGNMENT) {
+      const childVariable = child.variable
+      const childValueNode = child.children[0]
+      const id = `$__${enumName}.${childVariable}`
+      if (!validEnumValues.includes(childValueNode.type)) {
+        throw new Error(
+          `Invalid enum case value of type ${childValueNode.type} when declaring enum ${enumName}`
+        )
+      }
+      return { name: childVariable, assigned: true, id, value: childValueNode }
+    }
+  })
+
+const getEnumDefinitionByName = (identifier, enumDefinitions) =>
+  enumDefinitions.find(({ name: enumName }) => enumName === identifier)
+const getEnumCase = (identifier, enumDefinition) =>
+  enumDefinition.cases.find(({ name: caseName }) => caseName === identifier)
+
+const walkAssumedPrimitive = (node) =>
+  walkNode({ node, varsInScope: false, enumDefinitions: false })[0]
 
 const inScope = (theVar, varsInScope) =>
   varsInScope.weaks.includes(theVar) || varsInScope.consts.includes(theVar)
@@ -68,6 +114,7 @@ const walkNode = ({
   varsInScope,
   isPropertyAccess,
   unshiftedFirstArgFromPipe,
+  enumDefinitions,
 }) => {
   debugConsole.log("--------------------------")
   debugConsole.log("node", node)
@@ -77,6 +124,7 @@ const walkNode = ({
       // eslint-disable-next-line no-unused-vars
       const [result, context] = mapBlockScope({
         nodes: node.children,
+        enumDefinitions,
         varsInScope,
         assignmentStr: "",
       })
@@ -98,6 +146,7 @@ const walkNode = ({
       }
       const [statements, context] = mapBlockScope({
         nodes: node.children,
+        enumDefinitions,
         varsInScope: { ...varsInScope, consts },
       })
       const expression = `function ${node.name}(${node.args
@@ -112,13 +161,17 @@ const walkNode = ({
         args.unshift(unshiftedFirstArgFromPipe)
       }
       let lambdaVarsRequested = []
-      const [functionName] = walkNode({ node: node.function, varsInScope })
+      const [functionName] = walkNode({
+        node: node.function,
+        enumDefinitions,
+        varsInScope,
+      })
       const expression = `${functionName}(${args
         .map((node) => {
           const [
             expression,
             { lambdaVarsRequested: expressionLambdaVarsRequested },
-          ] = walkNode({ node, varsInScope })
+          ] = walkNode({ node, enumDefinitions, varsInScope })
           lambdaVarsRequested = [
             ...lambdaVarsRequested,
             ...expressionLambdaVarsRequested,
@@ -137,7 +190,7 @@ const walkNode = ({
           const [
             expression,
             { lambdaVarsRequested: expressionLambdaVarsRequested },
-          ] = walkNode({ node, varsInScope })
+          ] = walkNode({ node, enumDefinitions, varsInScope })
           lambdaVarsRequested = [
             ...lambdaVarsRequested,
             ...expressionLambdaVarsRequested,
@@ -148,6 +201,7 @@ const walkNode = ({
       const [body, { lambdaVarsRequested: bodyLambdaVarsRequested }] =
         mapBlockScope({
           nodes: node.children,
+          enumDefinitions,
           assignmentStr: "tmp=",
           varsInScope,
         })
@@ -157,6 +211,7 @@ const walkNode = ({
         const [elseBody, { lambdaVarsRequested: elseLambdaVarsRequested }] =
           mapBlockScope({
             nodes: node.else,
+            enumDefinitions,
             assignmentStr: "tmp=",
             varsInScope,
           })
@@ -177,6 +232,7 @@ const walkNode = ({
       const [body, { lambdaVarsRequested: bodyLambdaVarsRequested }] =
         mapBlockScope({
           nodes: node.children,
+          enumDefinitions,
           assignmentStr: "tmp=",
           varsInScope,
         })
@@ -205,6 +261,7 @@ const walkNode = ({
           mapBlockScope({
             nodes: handlerNode.children,
             assignmentStr: "tmp=",
+            enumDefinitions,
             varsInScope: {
               ...varsInScope,
               consts: [...varsInScope.consts, errorVariable],
@@ -229,6 +286,7 @@ const walkNode = ({
           const [value, { lambdaVarsRequested: valueLambdaVarsRequested }] =
             walkNode({
               node: node.values[index],
+              enumDefinitions,
               varsInScope,
             })
           lambdaVarsRequested = [
@@ -247,7 +305,7 @@ const walkNode = ({
       const expression = `[${node.children
         .map((node) => {
           const [element, { lambdaVarsRequested: elementLambdaVarsRequested }] =
-            walkNode({ node, varsInScope })
+            walkNode({ node, enumDefinitions, varsInScope })
           lambdaVarsRequested = [
             ...lambdaVarsRequested,
             ...elementLambdaVarsRequested,
@@ -261,6 +319,7 @@ const walkNode = ({
     case nt.UNARY_EXPRESSION: {
       const space = node.operator === "-" ? " " : ""
       const [operand, context] = walkNode({
+        enumDefinitions,
         node: node.operand,
         varsInScope,
       })
@@ -278,18 +337,48 @@ const walkNode = ({
 
         return walkNode({
           node: node.right,
+          enumDefinitions,
           varsInScope,
-          isPropertyAccess: node.operator === ".",
           unshiftedFirstArgFromPipe: node.left,
         })
       }
 
+      let isEnumAccess = false
+
+      if (node.operator === "." && node.left.type === nt.IDENTIFIER) {
+        const enumDefinition = getEnumDefinitionByName(
+          node.left.value,
+          enumDefinitions
+        )
+        if (enumDefinition) {
+          const caseName = node.right.value
+          const enumCase = getEnumCase(caseName, enumDefinition)
+          if (enumCase) {
+            if (enumCase.assigned) {
+              return walkNode({
+                node: enumCase.value,
+                enumDefinitions,
+                varsInScope,
+              })
+            } else {
+              const context = { lambdaVarsRequested: [] }
+              return [`"${enumCase.id}"`, context]
+            }
+          } else {
+            throw new Error(
+              `Case "${caseName}" does not exist on enum "${enumDefinition.name}"`
+            )
+          }
+        }
+      }
+
       const [left, { lambdaVarsRequested: leftLambdaVarsRequested }] = walkNode(
-        { node: node.left, varsInScope }
+        { node: node.left, enumDefinitions, varsInScope, isEnumAccess }
       )
       const [right, { lambdaVarsRequested: rightLambdaVarsRequested }] =
         walkNode({
           node: node.right,
+          enumDefinitions,
           varsInScope,
           isPropertyAccess: node.operator === ".",
         })
@@ -338,7 +427,7 @@ const walkNode = ({
       const expression = `(${node.children
         .map((node) => {
           const [sibling, { lambdaVarsRequested: siblingLambdaVarsRequested }] =
-            walkNode({ node, varsInScope })
+            walkNode({ node, enumDefinitions, varsInScope })
           lambdaVarsRequested = [
             ...lambdaVarsRequested,
             ...siblingLambdaVarsRequested,
@@ -358,6 +447,7 @@ const walkNode = ({
 
       const [statements, { lambdaVarsRequested }] = mapBlockScope({
         nodes: node.children,
+        enumDefinitions,
         varsInScope: { ...varsInScope, consts: [...consts, ...argsStrings] },
       })
 
@@ -387,11 +477,16 @@ const walkNode = ({
     case nt.ASSIGNMENT: {
       if (inScopeAsConstant(node.variable, varsInScope)) {
         throw new Error(
-          `Variable "${node.variable}" has already been assigned. To allow it to be reassigned, declare it as: "weak ${node.variable}"`
+          `Variable "${node.variable}" has already been assigned. To allow it to be reassigned, initially assign it as: "weak ${node.variable}"`
+        )
+      } else if (getEnumDefinitionByName(node.variable, enumDefinitions)) {
+        throw new Error(
+          `Could not assign "${node.variable}" as a variable because it has already been defined as an enum.`
         )
       }
       const [rightSide, context] = walkNode({
         node: node.children[0],
+        enumDefinitions,
         varsInScope,
       })
 
@@ -412,7 +507,17 @@ const walkNode = ({
     }
 
     case nt.ENUM_DEFINITION: {
-      return ["", { lambdaVarsRequested: [] }]
+      const cases = walkEnumCases(node)
+      return [
+        "",
+        {
+          lambdaVarsRequested: [],
+          enumDefinition: {
+            name: node.name,
+            cases,
+          },
+        },
+      ]
     }
 
     case nt.CONCISE_LAMBDA_ARGUMENT:
@@ -459,6 +564,7 @@ const jsCompile = ({ ast, debug, jsGlobals }) => {
   let [result] = walkNode({
     node: ast,
     varsInScope: { weaks: [], consts: [...jsGlobals] },
+    enumDefinitions: [],
   })
   result = defineHelpers(result)
   debugConsole.log("result:\n", result)

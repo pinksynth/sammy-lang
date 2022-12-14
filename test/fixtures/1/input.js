@@ -82,5 +82,26 @@ struct MyStruct {
 }
 
 %MyStruct[foo: "nice", bar: 420]
+
+# Enumerations are supported with the "enum" keyword. Case values are unique, and in JS they are stored as strings.
+enum Directions {
+  north
+  east
+  south
+  west
+}
+
+Directions.north
+Directions.east
+
+# Enums also allow explicit assigning of case values.
+enum Suites {
+  heart   = 1
+  diamond = 2
+  spade   = 3
+  club    = 4
+}
+
+Suites.diamond # -> 2
 `
 module.exports = input

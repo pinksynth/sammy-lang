@@ -12,7 +12,7 @@ const handleStructDefinition = ({
 }) => {
   if (currentScope !== st.ROOT) {
     throw new Error(
-      `Cannot declare struct "${nextToken.value}" in scope ${currentScope}. Structs may only be declared in the root scope.`
+      `Cannot define struct "${nextToken.value}" in scope ${currentScope}. Structs may only be defined in the root scope.`
     )
   }
   scopes.push(st.STRUCT_DEFINITION)

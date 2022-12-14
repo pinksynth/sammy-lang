@@ -12,7 +12,7 @@ const handleEnumDefinition = ({
 }) => {
   if (currentScope !== st.ROOT) {
     throw new Error(
-      `Cannot declare enum "${nextToken.value}" in scope ${currentScope}. Enums may only be declared in the root scope.`
+      `Cannot define enum "${nextToken.value}" in scope ${currentScope}. Enums may only be define in the root scope.`
     )
   }
   scopes.push(st.ENUM_DEFINITION)
