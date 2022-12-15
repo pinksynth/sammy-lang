@@ -2,7 +2,7 @@ const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 const tt = require("../tokenTypes")
 
-const handleFunctionDeclarationName = ({
+const handleFunctiondefinitionName = ({
   consumeExtra,
   nextToken,
   node,
@@ -23,14 +23,16 @@ const handleFunctionDeclarationName = ({
     children: [],
     parent: node,
     name: nextToken.value,
-    type: nt.FUNCTION_DECLARATION,
+    type: nt.FUNCTION_definition,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)
 
-  // For named function declarations, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
+  // For named function definitions, we have consumed the keyword, the name, and the opening paren fot the args, so we'll manually increment the tokens by an extra 2.
   consumeExtra()
   consumeExtra()
 }
 
-module.exports = handleFunctionDeclarationName
+module.exports = handleFunctiondefinitionName

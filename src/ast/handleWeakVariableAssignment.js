@@ -29,6 +29,8 @@ const handleWeakVariableAssignment = ({
     type: nt.ASSIGNMENT,
     variable: nextToken.value,
     weak: true,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)

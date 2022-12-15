@@ -13,6 +13,9 @@ name = name.toUpperCase()
 # Arrays are space-separated
 [1 2 3 * 4 5]
 
+# Operator precedence works, so the folowing expression resolves to 26.
+2 * 3 + 4 * 5
+
 # The range operator (..) can be used to construct arrays from integers or characters. They may iterate forwards or backwards.
 my_range = 1..10
 reverse_alphabet = "z".."a"
@@ -37,7 +40,7 @@ subtract = @{ $1 - $2 }
 
 <<<
   Functions support two concise syntaxes.
-  This one uses declared variables.
+  This one uses defined variables.
 >>>
 is_even = @ x { x % 2 == 0 }
 is_even(3)

@@ -8,6 +8,7 @@ const handleStructLiteral = ({
   pushToExpressionList,
   setNode,
   scopes,
+  token,
 }) => {
   scopes.push(st.OBJECT_KEY)
 
@@ -17,6 +18,8 @@ const handleStructLiteral = ({
     keys: [],
     values: [],
     parent: node,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)

@@ -19,12 +19,16 @@ const handleSuperiorOperator = ({
     operator: parentOperator,
     parent: node,
     type: nt.BINARY_EXPR,
+    lineNumberStart: leftOperand.lineNumberStart,
+    columnNumberStart: leftOperand.columnNumberStart,
   }
   const rightChild = {
     left: childLeft,
     operator: token.value,
     parent: replacedParent,
     type: nt.BINARY_EXPR,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
 
   scopes.push(st.BINARY_OPERATOR)
@@ -49,12 +53,16 @@ const handleOperatorAsRightSideOfAssignment = ({
     variable: parentVariable,
     parent: node,
     type: nt.ASSIGNMENT,
+    lineNumberStart: leftOperand.lineNumberStart,
+    columnNumberStart: leftOperand.columnNumberStart,
   }
   const rightChild = {
     left: childLeft,
     operator: token.value,
     parent: replacedParent,
     type: nt.BINARY_EXPR,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
 
   scopes.push(st.BINARY_OPERATOR)
@@ -115,6 +123,8 @@ const handleBinaryOperator = ({
       operator: token.value,
       parent: node,
       type: nt.BINARY_EXPR,
+      lineNumberStart: token.lineNumberStart,
+      columnNumberStart: token.columnNumberStart,
     }
     pushToExpressionList(child)
     setNode(child)

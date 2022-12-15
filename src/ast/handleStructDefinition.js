@@ -9,10 +9,11 @@ const handleStructDefinition = ({
   pushToExpressionList,
   scopes,
   setNode,
+  token,
 }) => {
   if (currentScope !== st.ROOT) {
     throw new Error(
-      `Cannot define struct "${nextToken.value}" in scope ${currentScope}. Structs may only be defined in the root scope.`
+      `Cannot define struct "${nextToken.value}" in scope ${currentScope} on line ${token.lineNumberStart}. Structs may only be defined in the root scope.`
     )
   }
   scopes.push(st.STRUCT_DEFINITION)
@@ -21,6 +22,8 @@ const handleStructDefinition = ({
     name: nextToken.value,
     children: [],
     parent: node,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)

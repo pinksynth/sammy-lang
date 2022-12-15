@@ -15,8 +15,8 @@ const handleCloseBracket = require("./handleCloseBracket")
 const handleCloseCurly = require("./handleCloseCurly")
 const handleCloseParen = require("./handleCloseParen")
 const handleFunctionCall = require("./handleFunctionCall")
-const handleFunctionDeclarationArgs = require("./handleFunctionDeclarationArgs")
-const handleFunctionDeclarationName = require("./handleFunctionDeclarationName")
+const handleFunctiondefinitionArgs = require("./handleFunctiondefinitionArgs")
+const handleFunctiondefinitionName = require("./handleFunctiondefinitionName")
 const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
 const handleKeywordElse = require("./handleKeywordElse")
 const handleKeywordIf = require("./handleKeywordIf")
@@ -176,9 +176,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Function declaration args
+    // Function definition args
     if (currentScope === st.FUNCTION_DEC_ARGS) {
-      handleFunctionDeclarationArgs(context)
+      handleFunctiondefinitionArgs(context)
       continue
     }
 
@@ -229,9 +229,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Opening of function declaration
+    // Opening of function definition
     if (tokenType === tt.FUNCTION && nextTokenType === tt.VAR) {
-      handleFunctionDeclarationName(context)
+      handleFunctiondefinitionName(context)
       continue
     }
 

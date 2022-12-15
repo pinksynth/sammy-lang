@@ -1,7 +1,13 @@
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const handleKeywordTry = ({ node, pushToExpressionList, scopes, setNode }) => {
+const handleKeywordTry = ({
+  node,
+  pushToExpressionList,
+  scopes,
+  setNode,
+  token,
+}) => {
   scopes.push(st.TRY_BODY)
 
   const child = {
@@ -10,6 +16,8 @@ const handleKeywordTry = ({ node, pushToExpressionList, scopes, setNode }) => {
     handlerPatterns: [],
     parent: node,
     type: nt.TRY_EXPR,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)

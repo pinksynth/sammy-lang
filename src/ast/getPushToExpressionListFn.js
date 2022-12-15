@@ -43,7 +43,7 @@ const getPushToExpressionListFn =
       childNode.type !== nt.ASSIGNMENT
     ) {
       throw new Error(
-        `Struct definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside struct "${node.name}"`
+        `Struct definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside struct "${node.name}" on line ${token.lineNumberStart}`
       )
     }
 
@@ -53,7 +53,7 @@ const getPushToExpressionListFn =
       childNode.type !== nt.ASSIGNMENT
     ) {
       throw new Error(
-        `Enum definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside enum "${node.name}"`
+        `Enum definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside enum "${node.name}" on line ${token.lineNumberStart}`
       )
     }
 

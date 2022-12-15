@@ -5,7 +5,7 @@ const nt = {
   CONCISE_LAMBDA_ARGUMENT: /* */ "CONCISE_LAMBDA_ARGUMENT",
   ENUM_DEFINITION: /*         */ "ENUM_DEFINITION",
   FUNCTION_CALL: /*           */ "FUNCTION_CALL",
-  FUNCTION_DECLARATION: /*    */ "FUNCTION_DECLARATION",
+  FUNCTION_definition: /*    */ "FUNCTION_definition",
   GENERIC_EXPRESSION: /*      */ "GENERIC_EXPRESSION",
   IDENTIFIER: /*              */ "IDENTIFIER",
   IF_EXPR: /*                 */ "IF_EXPR",

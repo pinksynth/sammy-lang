@@ -6,12 +6,15 @@ const handleHandlerOpen = ({
   pushToExpressionList,
   setNode,
   swapScope,
+  token,
 }) => {
   swapScope(st.TRY_HANDLER_BODY)
   const child = {
     type: nt.TRY_HANDLER,
     parent: node,
     children: [],
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   setNode(child)
   pushToExpressionList(child, st.TRY_HANDLER_BODY)

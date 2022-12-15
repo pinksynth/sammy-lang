@@ -2,7 +2,7 @@ const getTerminalNode = require("./getTerminalNode")
 const st = require("./scopeTypes")
 const tt = require("../tokenTypes")
 
-const handleFunctionDeclarationArgs = ({
+const handleFunctiondefinitionArgs = ({
   consumeExtra,
   nextToken,
   nextTokenType,
@@ -22,18 +22,18 @@ const handleFunctionDeclarationArgs = ({
       )
     }
 
-    // When going from function declaration arguments to the body, we consume the closing paren and opening curly brace ") {", so increment the index by an extra 1.
+    // When going from function definition arguments to the body, we consume the closing paren and opening curly brace ") {", so increment the index by an extra 1.
     consumeExtra()
 
-    // Note that unlike other things, our scope changes but the parent node (the function declaration) does not change.
+    // Note that unlike other things, our scope changes but the parent node (the function definition) does not change.
     swapScope(st.FUNCTION_DEC_BODY)
 
     return
   } else {
     throw new Error(
-      `Unexpected token "${nextToken.value}" when declaring function arguments on line ${token.lineNumberStart}`
+      `Unexpected token "${nextToken.value}" when defining function arguments on line ${token.lineNumberStart}`
     )
   }
 }
 
-module.exports = handleFunctionDeclarationArgs
+module.exports = handleFunctiondefinitionArgs

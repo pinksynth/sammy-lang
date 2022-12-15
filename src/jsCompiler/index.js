@@ -25,8 +25,8 @@ const mapBlockScope = ({
   }
   const childStrings = []
   for (const node of nodes) {
-    // For function declarations, make the name available to siblings
-    if (node.type === nt.FUNCTION_DECLARATION) {
+    // For function definitions, make the name available to siblings
+    if (node.type === nt.FUNCTION_definition) {
       thisBlockVars.weaks.push(node.name)
     }
     const [
@@ -85,7 +85,7 @@ const walkEnumCases = ({ children, name: enumName }) =>
       const id = `$__${enumName}.${childVariable}`
       if (!validEnumValues.includes(childValueNode.type)) {
         throw new Error(
-          `Invalid enum case value of type ${childValueNode.type} when declaring enum ${enumName}`
+          `Invalid enum case value of type ${childValueNode.type} on line ${child.lineNumberStart} when defining enum ${enumName}. Valid values are strings, numbers, and booleans.`
         )
       }
       return { name: childVariable, assigned: true, id, value: childValueNode }
@@ -131,14 +131,14 @@ const walkNode = ({
       return [result, context]
     }
 
-    case nt.FUNCTION_DECLARATION: {
+    case nt.FUNCTION_definition: {
       // Make function arguments available the function body, and treat them as `const` so they may not be overridden.
       const consts = [...varsInScope.consts]
       for (const { type, value } of node.args) {
         if (type === nt.IDENTIFIER) {
           if (inScope(value, varsInScope)) {
             throw new Error(
-              `Cannot use "${value}" as a function argument because it is already defined in the current scope.`
+              `Cannot use "${value}" as a function argument on line ${node.lineNumberStart} because it is already defined in the current scope.`
             )
           }
           consts.push(value)
@@ -241,7 +241,7 @@ const walkNode = ({
       const secondPatternNode = node.handlerPatterns[1]
       if (secondPatternNode) {
         throw new Error(
-          `Multiple error handlers are not supported for the jsCompiler (yet). Evaluating ${secondPatternNode.type}:${secondPatternNode.value}`
+          `Multiple error handlers are not supported for the jsCompiler (yet). Evaluating ${secondPatternNode.type}:${secondPatternNode.value} on line ${secondPatternNode.lineNumberStart}`
         )
       }
 
@@ -250,7 +250,7 @@ const walkNode = ({
       if (patternNode) {
         if (patternNode.type !== nt.IDENTIFIER) {
           throw new Error(
-            `Pattern matching is not supported for error handlers in the jsCompiler (yet). Evaluating ${patternNode.type}`
+            `Pattern matching is not supported for error handlers in the jsCompiler (yet). Evaluating ${patternNode.type} on line ${patternNode.lineNumberStart}`
           )
         }
 
@@ -331,7 +331,7 @@ const walkNode = ({
         if (node.right.type !== nt.FUNCTION_CALL) {
           // TODO: Should this check happen in lexer? Either way we should describe the failing token with line/column number.
           throw new Error(
-            `Attempted to pipe into an expression which is not a function call: ${node.right.type}`
+            `Attempted to pipe into an expression which is not a function call: "${node.right.type}" on line ${node.right.lineNumberStart}`
           )
         }
 
@@ -366,7 +366,7 @@ const walkNode = ({
             }
           } else {
             throw new Error(
-              `Case "${caseName}" does not exist on enum "${enumDefinition.name}"`
+              `Error on line ${node.right.lineNumberStart}. Case "${caseName}" does not exist on enum "${enumDefinition.name}"`
             )
           }
         }
@@ -477,11 +477,11 @@ const walkNode = ({
     case nt.ASSIGNMENT: {
       if (inScopeAsConstant(node.variable, varsInScope)) {
         throw new Error(
-          `Variable "${node.variable}" has already been assigned. To allow it to be reassigned, initially assign it as: "weak ${node.variable}"`
+          `Error on line ${node.lineNumberStart}: Variable "${node.variable}" has already been assigned. To allow it to be reassigned, initially assign it as: "weak ${node.variable}"`
         )
       } else if (getEnumDefinitionByName(node.variable, enumDefinitions)) {
         throw new Error(
-          `Could not assign "${node.variable}" as a variable because it has already been defined as an enum.`
+          `Error on line ${node.lineNumberStart}: Could not assign "${node.variable}" as a variable because it has already been defined as an enum.`
         )
       }
       const [rightSide, context] = walkNode({
@@ -531,7 +531,7 @@ const walkNode = ({
       if (node.type === nt.IDENTIFIER && varsInScope) {
         if (!isPropertyAccess && !inScope(node.value, varsInScope)) {
           throw new Error(
-            `Variable ${node.value} is not defined in the current scope.`
+            `Variable ${node.value} on line ${node.lineNumberStart} is not defined in the current scope.`
           )
         }
       }
@@ -544,7 +544,7 @@ const walkNode = ({
 
     default:
       throw new Error(
-        `AST node type "${node.type}" has not been implemented for the jsCompiler.`
+        `AST node type "${node.type}" has not been implemented for the jsCompiler. See line ${node.lineNumberStart}.`
       )
   }
 }

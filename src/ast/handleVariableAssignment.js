@@ -32,6 +32,8 @@ const handleVariableAssignment = ({
     type: nt.ASSIGNMENT,
     variable: token.value,
     weak: false,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
   pushToExpressionList(child)
   setNode(child)

@@ -2,7 +2,8 @@ const tt = require("../tokenTypes")
 const nt = require("./nodeTypes")
 
 // Gets a terminal node from primitive tokens such as booleans, numbers, or strings.
-const getTerminalNode = ({ parent, token: { value, tokenType } }) => {
+const getTerminalNode = ({ parent, token }) => {
+  const { value, tokenType } = token
   let type,
     nodeValue = value
   switch (tokenType) {
@@ -35,12 +36,16 @@ const getTerminalNode = ({ parent, token: { value, tokenType } }) => {
       type = nt.CONCISE_LAMBDA_ARGUMENT
       break
     default:
-      throw new Error(`Invalid type ${tokenType}`)
+      throw new Error(
+        `Invalid type ${tokenType} encountered on line ${token.lineNumberStart}`
+      )
   }
   return {
     parent,
     type,
     value: nodeValue,
+    lineNumberStart: token.lineNumberStart,
+    columnNumberStart: token.columnNumberStart,
   }
 }
 
