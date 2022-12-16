@@ -109,6 +109,14 @@ enum Suites {
 }
 
 Suites.diamond # -> 2
+
+# Functions may be defined with multiple arities. The function body that is called corresponds to the number of arguments.
+function greet() { console.log("Hello!") }
+function greet(fname) { console.log("My name's " + fname + ".") }
+function greet(fname age) { console.log("My name's " + fname + ". I am " + age + " years old.") }
+greet()           # "Hello!"
+greet("Jim")      # "My name's Jim."
+greet("Doris" 25) # "My name's Doris. I am 25 years old."
 `,
   debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],

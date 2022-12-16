@@ -48,7 +48,7 @@ my_var = 1
 
 ### Functions
 
-By default, functions may only be invoked with the arity defined. Multiple definitions may have separate arities. Returns are required. There is no `return` keyword.
+By default, functions may only be invoked with the arity (signature) defined. Multiple definitions may have separate arities. Returns are implicit. There is no `return` keyword.
 
 ```
 function my_func(arg1 arg2) {

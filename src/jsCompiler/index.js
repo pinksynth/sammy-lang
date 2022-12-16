@@ -9,6 +9,8 @@ const RANGE_FUNC_NAME = "__RANGE__"
 const RANGE_FUNC = `function ${RANGE_FUNC_NAME}(t,f){if(t===f)return[t];const r=[];if(typeof t==="number"&&typeof f==="number"){if(t<f)for(let e=t;e<=f;e++)r.push(e);else for(let e=t;e>=f;e--)r.push(e)}else if(typeof t==="string"&&typeof f==="string"&&t.length&&f.length){const n=String.fromCharCode;const o=t.charCodeAt(),i=f.charCodeAt();if(o<i)for(let e=o;e<=i;e++)r.push(n(e));else for(let e=o;e>=i;e--)r.push(n(e))}return r}`
 let shouldDefineRangeFunc = false
 
+const getFunctionName = (name, argsCount) => `${name}$${argsCount}`
+
 // As we iterate through expressions in a block scope, if those expressions are assignment expressions, we must make them available to subsequent siblings.
 const mapBlockScope = ({
   nodes,
@@ -149,7 +151,8 @@ const walkNode = ({
         enumDefinitions,
         varsInScope: { ...varsInScope, consts },
       })
-      const expression = `function ${node.name}(${node.args
+      const functionName = getFunctionName(node.name, node.args.length)
+      const expression = `function ${functionName}(${node.args
         .map(walkAssumedPrimitive)
         .join(",")}){${statements}}`
       return [expression, context]
@@ -161,11 +164,17 @@ const walkNode = ({
         args.unshift(unshiftedFirstArgFromPipe)
       }
       let lambdaVarsRequested = []
-      const [functionName] = walkNode({
+      const [callableExpression] = walkNode({
         node: node.function,
         enumDefinitions,
         varsInScope,
       })
+      let functionName = callableExpression
+
+      if (node.function.type === nt.IDENTIFIER) {
+        functionName = getFunctionName(callableExpression, args.length)
+      }
+
       const expression = `${functionName}(${args
         .map((node) => {
           const [
