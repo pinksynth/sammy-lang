@@ -23,7 +23,7 @@ const handleFunctiondefinitionName = ({
     children: [],
     parent: node,
     name: nextToken.value,
-    type: nt.FUNCTION_definition,
+    type: nt.FUNCTION_DEFINITION,
     lineNumberStart: token.lineNumberStart,
     columnNumberStart: token.columnNumberStart,
   }

@@ -302,7 +302,7 @@ const ast = {
         },
       ],
       name: "multiply",
-      type: "FUNCTION_definition",
+      type: "FUNCTION_DEFINITION",
       lineNumberStart: 28,
       columnNumberStart: 1,
     },

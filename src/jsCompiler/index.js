@@ -26,7 +26,7 @@ const mapBlockScope = ({
   const childStrings = []
   for (const node of nodes) {
     // For function definitions, make the name available to siblings
-    if (node.type === nt.FUNCTION_definition) {
+    if (node.type === nt.FUNCTION_DEFINITION) {
       thisBlockVars.weaks.push(node.name)
     }
     const [
@@ -131,7 +131,7 @@ const walkNode = ({
       return [result, context]
     }
 
-    case nt.FUNCTION_definition: {
+    case nt.FUNCTION_DEFINITION: {
       // Make function arguments available the function body, and treat them as `const` so they may not be overridden.
       const consts = [...varsInScope.consts]
       for (const { type, value } of node.args) {
