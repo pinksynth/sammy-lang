@@ -1,4 +1,3 @@
-const input = `
 # Variables and primitives
 a = 1
 true
@@ -106,5 +105,3 @@ enum Suites {
 }
 
 Suites.diamond # -> 2
-`
-module.exports = input
