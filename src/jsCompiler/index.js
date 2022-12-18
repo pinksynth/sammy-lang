@@ -20,7 +20,7 @@ const mapBlockScope = ({
 }) => {
   let lambdaVarsRequested = []
   const thisBlockEnumDefinitions = [...enumDefinitions]
-  if (nodes.length === 0) return ""
+  if (nodes.length === 0) return ["", { lambdaVarsRequested }]
   const thisBlockVars = {
     weaks: [...varsInScope.weaks],
     consts: [...varsInScope.consts],
@@ -29,7 +29,9 @@ const mapBlockScope = ({
   for (const node of nodes) {
     // For function definitions, make the name available to siblings
     if (node.type === nt.FUNCTION_DEFINITION) {
-      thisBlockVars.weaks.push(node.name)
+      // Push both the arity function name (e.g., my_func$3)
+      thisBlockVars.consts.push(getFunctionName(node.name, node.args.length))
+      thisBlockVars.consts.push(node.name)
     }
     const [
       childString,
@@ -172,7 +174,8 @@ const walkNode = ({
       let functionName = callableExpression
 
       if (node.function.type === nt.IDENTIFIER) {
-        functionName = getFunctionName(callableExpression, args.length)
+        const nonLambdaName = getFunctionName(callableExpression, args.length)
+        if (inScope(nonLambdaName, varsInScope)) functionName = nonLambdaName
       }
 
       const expression = `${functionName}(${args
