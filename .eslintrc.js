@@ -8,6 +8,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
   },
+  ignorePatterns: ["**/output/*.js"],
   rules: {
     "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
   },

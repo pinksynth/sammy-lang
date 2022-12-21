@@ -5,7 +5,6 @@ const handleWeakVariableAssignment = ({
   consumeExtra,
   currentScope,
   nextToken,
-  nextTokenType,
   node,
   pushToExpressionList,
   scopes,

@@ -6,6 +6,6 @@ const { compile } = require(".")
 compile({
   input,
   // debug: true,
-  jsGlobals: ["console", "Math", "foo", "baz", "d", "f", "h"],
+  jsGlobals: ["console", "Math", "foo", "baz"],
   writeToFiles: true,
 })

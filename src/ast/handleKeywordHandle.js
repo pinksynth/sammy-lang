@@ -1,6 +1,6 @@
 const st = require("./scopeTypes")
 
-const handleKeywordHandle = ({ currentScope, pop, scopes, swapScope }) => {
+const handleKeywordHandle = ({ currentScope, pop, scopes }) => {
   if (currentScope === st.TRY_HANDLER_BODY) {
     pop()
   }
