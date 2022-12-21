@@ -105,3 +105,12 @@ enum Suites {
 }
 
 Suites.diamond # -> 2
+
+# Strings may be interpolated using curly braces. Everything between curly braces is called an "interpolation context", and these contexts may be recursive.
+my_string = "Hello! My name is { name }. I am feeling {
+  if mood == "good" {
+    "just fine!"
+  } else {
+    "not so hot."
+  }
+}"

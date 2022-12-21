@@ -19,6 +19,7 @@ const nt = {
   LITERAL_STRUCT: /*          */ "LITERAL_STRUCT",
   LITERAL_UNDEFINED: /*       */ "LITERAL_UNDEFINED",
   ROOT: /*                    */ "ROOT",
+  STRING_INTERPOLATION: /*    */ "STRING_INTERPOLATION",
   STRUCT_DEFINITION: /*       */ "STRUCT_DEFINITION",
   TERNARY_EXPR: /*            */ "TERNARY_EXPR",
   TRY_EXPR: /*                */ "TRY_EXPR",

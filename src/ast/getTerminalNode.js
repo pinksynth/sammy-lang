@@ -16,9 +16,6 @@ const getTerminalNode = ({ parent, token }) => {
     case tt.UNDEFINED:
       type = nt.LITERAL_UNDEFINED
       break
-    case tt.STRING:
-      type = nt.LITERAL_STRING
-      break
     // For numbers, we strip the allowed underscores and just basic float syntax
     case tt.NUMBER: {
       type = nt.LITERAL_NUMBER

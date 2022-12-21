@@ -15,6 +15,8 @@ const st = {
   OBJECT_KEY: /*              */ "OBJECT_KEY",
   OBJECT_VALUE: /*            */ "OBJECT_VALUE",
   ROOT: /*                    */ "ROOT",
+  STRING: /*                  */ "STRING",
+  STRING_INTERPOLATION: /*    */ "STRING_INTERPOLATION",
   STRUCT_DEFINITION: /*       */ "STRUCT_DEFINITION",
   STRUCT_KEY: /*              */ "STRUCT_KEY",
   STRUCT_VALUE: /*            */ "STRUCT_VALUE",
@@ -23,5 +25,7 @@ const st = {
   TRY_HANDLER_BODY: /*        */ "TRY_HANDLER_BODY",
   UNARY_OPERATOR: /*          */ "UNARY_OPERATOR",
 }
+
+st.operandScopeTypes = [st.ASSIGNMENT, st.UNARY_OPERATOR, st.BINARY_OPERATOR]
 
 module.exports = st

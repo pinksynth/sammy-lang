@@ -24,7 +24,8 @@ const ast = {
     },
     {
       type: "LITERAL_STRING",
-      value: '"String"',
+      subStrings: ["String"],
+      interpolations: [],
       lineNumberStart: 4,
       columnNumberStart: 1,
     },
@@ -38,7 +39,8 @@ const ast = {
       children: [
         {
           type: "LITERAL_STRING",
-          value: '"Sammy"',
+          subStrings: ["Sammy"],
+          interpolations: [],
           lineNumberStart: 8,
           columnNumberStart: 13,
         },
@@ -53,7 +55,8 @@ const ast = {
       children: [
         {
           type: "LITERAL_STRING",
-          value: '"Jimbo"',
+          subStrings: ["Jimbo"],
+          interpolations: [],
           lineNumberStart: 9,
           columnNumberStart: 8,
         },
@@ -216,7 +219,8 @@ const ast = {
         {
           left: {
             type: "LITERAL_STRING",
-            value: '"z"',
+            subStrings: ["z"],
+            interpolations: [],
             lineNumberStart: 20,
             columnNumberStart: 20,
           },
@@ -226,7 +230,8 @@ const ast = {
           columnNumberStart: 23,
           right: {
             type: "LITERAL_STRING",
-            value: '"a"',
+            subStrings: ["a"],
+            interpolations: [],
             lineNumberStart: 20,
             columnNumberStart: 25,
           },
@@ -252,7 +257,8 @@ const ast = {
       values: [
         {
           type: "LITERAL_STRING",
-          value: '"bar"',
+          subStrings: ["bar"],
+          interpolations: [],
           lineNumberStart: 23,
           columnNumberStart: 8,
         },
@@ -844,7 +850,8 @@ const ast = {
           children: [
             {
               type: "LITERAL_STRING",
-              value: '"good"',
+              subStrings: ["good"],
+              interpolations: [],
               lineNumberStart: 57,
               columnNumberStart: 38,
             },
@@ -852,7 +859,8 @@ const ast = {
           else: [
             {
               type: "LITERAL_STRING",
-              value: '"bad"',
+              subStrings: ["bad"],
+              interpolations: [],
               lineNumberStart: 57,
               columnNumberStart: 54,
             },
@@ -948,7 +956,8 @@ const ast = {
           children: [
             {
               type: "LITERAL_STRING",
-              value: '"excellent"',
+              subStrings: ["excellent"],
+              interpolations: [],
               lineNumberStart: 63,
               columnNumberStart: 5,
             },
@@ -1182,7 +1191,8 @@ const ast = {
           children: [
             {
               type: "LITERAL_STRING",
-              value: '"default key"',
+              subStrings: ["default key"],
+              interpolations: [],
               lineNumberStart: 83,
               columnNumberStart: 9,
             },
@@ -1217,7 +1227,8 @@ const ast = {
       values: [
         {
           type: "LITERAL_STRING",
-          value: '"nice"',
+          subStrings: ["nice"],
+          interpolations: [],
           lineNumberStart: 86,
           columnNumberStart: 16,
         },
@@ -1384,6 +1395,83 @@ const ast = {
         lineNumberStart: 107,
         columnNumberStart: 8,
       },
+    },
+    {
+      children: [
+        {
+          type: "LITERAL_STRING",
+          subStrings: ["Hello! My name is ", ". I am feeling ", ""],
+          interpolations: [
+            {
+              type: "STRING_INTERPOLATION",
+              children: [
+                {
+                  type: "IDENTIFIER",
+                  value: "name",
+                  lineNumberStart: 110,
+                  columnNumberStart: 34,
+                },
+              ],
+            },
+            {
+              type: "STRING_INTERPOLATION",
+              children: [
+                {
+                  condition: [
+                    {
+                      left: {
+                        type: "IDENTIFIER",
+                        value: "mood",
+                        lineNumberStart: 111,
+                        columnNumberStart: 6,
+                      },
+                      operator: "==",
+                      type: "BINARY_EXPR",
+                      lineNumberStart: 111,
+                      columnNumberStart: 11,
+                      right: {
+                        type: "LITERAL_STRING",
+                        subStrings: ["good"],
+                        interpolations: [],
+                        lineNumberStart: 111,
+                        columnNumberStart: 14,
+                      },
+                    },
+                  ],
+                  children: [
+                    {
+                      type: "LITERAL_STRING",
+                      subStrings: ["just fine!"],
+                      interpolations: [],
+                      lineNumberStart: 112,
+                      columnNumberStart: 5,
+                    },
+                  ],
+                  else: [
+                    {
+                      type: "LITERAL_STRING",
+                      subStrings: ["not so hot."],
+                      interpolations: [],
+                      lineNumberStart: 114,
+                      columnNumberStart: 5,
+                    },
+                  ],
+                  type: "IF_EXPR",
+                  lineNumberStart: 111,
+                  columnNumberStart: 3,
+                },
+              ],
+            },
+          ],
+          lineNumberStart: 110,
+          columnNumberStart: 13,
+        },
+      ],
+      type: "ASSIGNMENT",
+      variable: "my_string",
+      weak: false,
+      lineNumberStart: 110,
+      columnNumberStart: 1,
     },
   ],
 }

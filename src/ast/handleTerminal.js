@@ -1,5 +1,5 @@
 const getTerminalNode = require("./getTerminalNode")
-const st = require("./scopeTypes")
+const { operandScopeTypes } = require("./scopeTypes")
 
 const handleTerminal = ({
   currentScope,
@@ -10,13 +10,7 @@ const handleTerminal = ({
 }) => {
   pushToExpressionList(getTerminalNode({ parent: node, token }))
 
-  if (
-    currentScope === st.ASSIGNMENT ||
-    currentScope === st.UNARY_OPERATOR ||
-    currentScope === st.BINARY_OPERATOR
-  ) {
-    pop()
-  }
+  if (operandScopeTypes.includes(currentScope)) pop()
 }
 
 module.exports = handleTerminal

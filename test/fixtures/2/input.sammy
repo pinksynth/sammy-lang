@@ -1,0 +1,24 @@
+get_tax = @{ $1 * 0.08 }
+
+function print_receipt(subtotal customer_name) {
+	"
+		Receipt
+		Subtotal: { subtotal }
+		Tax:      { get_tax(subtotal) }
+		--------------------
+		Total:    { get_tax(subtotal) + subtotal }
+
+		{
+			if customer_name {
+				"Have a great day, { customer_name }"
+			} else {
+				"Have a great day!"
+			}
+		}
+	"
+}
+
+function print_receipt(subtotal) { print_receipt(subtotal false) }
+
+print_receipt(50 "Jimbo")
+print_receipt(75)

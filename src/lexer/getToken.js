@@ -1,5 +1,6 @@
 const charTypeFrom = require("../charTypeFrom")
 const ct = require("../characterTypes")
+const maybeGetStringTokenType = require("./maybeGetStringTokenType")
 const shouldContinueConsumingToken = require("./shouldContinueConsumingToken")
 const tt = require("../tokenTypes")
 
@@ -21,6 +22,7 @@ const getToken = (state) => {
   const value = charAccumulator.join("")
 
   let tokenType
+
   if (value === "null") {
     tokenType = tt.NULL
   } else if (value === "undefined") {
@@ -62,8 +64,6 @@ const getToken = (state) => {
     value === "<="
   ) {
     tokenType = tt.COMPARE
-  } else if (charTypeFrom(value[0]) === ct.CT_DOUBLE_QUOTE) {
-    tokenType = tt.STRING
   } else if (charTypeFrom(value[0]) === ct.CT_DOLLAR_SIGN) {
     tokenType = tt.CONCISE_LAMBDA_ARGUMENT
   } else if (charTypeFrom(value[0]) === ct.CT_HASH) {
@@ -109,6 +109,9 @@ const getToken = (state) => {
     tokenType = tt.HYPHEN
   } else if (latestCharType === ct.CT_IDENTIFIER) {
     tokenType = tt.VAR
+  } else {
+    const stringTokenType = maybeGetStringTokenType(value)
+    if (stringTokenType) tokenType = stringTokenType
   }
 
   if (tokenType === undefined) {

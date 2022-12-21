@@ -2,6 +2,7 @@
 const nt = require("../ast/nodeTypes")
 
 const { nullConsole } = require("../debug")
+const zipArrays = require("../util/zipArrays")
 
 let debugConsole
 
@@ -532,12 +533,40 @@ const walkNode = ({
       ]
     }
 
+    case nt.LITERAL_STRING: {
+      const lambdaVarsRequested = []
+      const escapedSubStrings = node.subStrings.map((subString) =>
+        subString.replace(/`/g, "\\`")
+      )
+      const interpolatedExpressions = node.interpolations.map(
+        (interpolationNode) => {
+          const [
+            expression,
+            { lambdaVarsRequested: lambdaVarsFromInterpolation },
+          ] = mapBlockScope({
+            nodes: interpolationNode.children,
+            assignmentStr: "return ",
+            enumDefinitions,
+            varsInScope,
+          })
+          lambdaVarsRequested.push(lambdaVarsFromInterpolation)
+
+          return `\${(()=>{${expression}})()}`
+        }
+      )
+
+      const expression = zipArrays(
+        escapedSubStrings,
+        interpolatedExpressions
+      ).join("")
+      return [`\`${expression}\``, { lambdaVarsRequested }]
+    }
+
     case nt.CONCISE_LAMBDA_ARGUMENT:
     case nt.IDENTIFIER:
     case nt.LITERAL_BOOLEAN:
     case nt.LITERAL_NULL:
     case nt.LITERAL_NUMBER:
-    case nt.LITERAL_STRING:
     case nt.LITERAL_UNDEFINED: {
       // Raise errors if attempting to use variables that have not been defined.
       if (node.type === nt.IDENTIFIER && varsInScope) {

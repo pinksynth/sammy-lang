@@ -2,40 +2,46 @@
 
 const { nullConsole } = require("../debug")
 
-const tt = require("../tokenTypes")
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
+const tt = require("../tokenTypes")
+
+const { operandScopeTypes } = require("./scopeTypes")
 
 const getCurrentExpressionListForScope = require("./getCurrentExpressionListForScope")
-const prepareCallableLeftSibling = require("./prepareCallableLeftSibling.js")
 const getPushToExpressionListFn = require("./getPushToExpressionListFn")
 const handleArrayOpen = require("./handleArrayOpen")
 const handleBinaryOperator = require("./handleBinaryOperator")
 const handleCloseBracket = require("./handleCloseBracket")
 const handleCloseCurly = require("./handleCloseCurly")
 const handleCloseParen = require("./handleCloseParen")
+const handleEnumDefinition = require("./handleEnumDefinition")
 const handleFunctionCall = require("./handleFunctionCall")
 const handleFunctiondefinitionArgs = require("./handleFunctiondefinitionArgs")
 const handleFunctiondefinitionName = require("./handleFunctiondefinitionName")
 const handleGenericExpressionOpen = require("./handleGenericExpressionOpen")
+const handleHandlerOpen = require("./handleHandlerOpen")
 const handleKeywordElse = require("./handleKeywordElse")
+const handleKeywordEnd = require("./handleKeywordEnd")
+const handleKeywordHandle = require("./handleKeywordHandle")
 const handleKeywordIf = require("./handleKeywordIf")
+const handleKeywordTry = require("./handleKeywordTry")
 const handleLambdaArgs = require("./handleLambdaArgs")
 const handleLambdaOpen = require("./handleLambdaOpen")
 const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
 const handleObjectOpen = require("./handleObjectOpen")
+const handleStringInterpAfter = require("./handleStringInterpAfter")
+const handleStringInterpBefore = require("./handleStringInterpBefore")
+const handleStringInterpBetween = require("./handleStringInterpBetween")
+const handleStringPure = require("./handleStringPure")
+const handleStructDefinition = require("./handleStructDefinition")
+const handleStructLiteral = require("./handleStructLiteral")
 const handleTerminal = require("./handleTerminal")
 const handleUnaryOperator = require("./handleUnaryOperator")
 const handleVariableAssignment = require("./handleVariableAssignment")
 const handleWeakVariableAssignment = require("./handleWeakVariableAssignment")
+const prepareCallableLeftSibling = require("./prepareCallableLeftSibling.js")
 const throwUnresolvedScopeError = require("./throwUnresolvedScopeError")
-const handleKeywordTry = require("./handleKeywordTry")
-const handleKeywordEnd = require("./handleKeywordEnd")
-const handleKeywordHandle = require("./handleKeywordHandle")
-const handleHandlerOpen = require("./handleHandlerOpen")
-const handleStructDefinition = require("./handleStructDefinition")
-const handleStructLiteral = require("./handleStructLiteral")
-const handleEnumDefinition = require("./handleEnumDefinition")
 
 const getAstFromTokens = ({ tokens, debug }) => {
   const debugConsole = debug ? console : nullConsole
@@ -63,13 +69,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     setNode(node.parent)
 
     // For right-hand of assignment, binary operators, and unary operators, pop the stack until we reach a scope which must be explicitly closed.
-    if (
-      currentScope === st.ASSIGNMENT ||
-      currentScope === st.UNARY_OPERATOR ||
-      currentScope === st.BINARY_OPERATOR
-    ) {
-      pop()
-    }
+    if (operandScopeTypes.includes(currentScope)) pop()
   }
 
   // Sometimes we transition from one scope to another which are part of the same AST node but have different rules. For example, transitioning from an "if" condition to an "if" body.
@@ -328,6 +328,24 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Unary operators, such as !
     if (tt.UNARY_OPERATORS.includes(tokenType)) {
       handleUnaryOperator(context)
+      continue
+    }
+
+    // Strings
+    if (tokenType === tt.STRING_PURE) {
+      handleStringPure(context)
+      continue
+    }
+    if (tokenType === tt.STRING_INTERP_BEFORE) {
+      handleStringInterpBefore(context)
+      continue
+    }
+    if (tokenType === tt.STRING_INTERP_BETWEEN) {
+      handleStringInterpBetween(context)
+      continue
+    }
+    if (tokenType === tt.STRING_INTERP_AFTER) {
+      handleStringInterpAfter(context)
       continue
     }
 

@@ -3,15 +3,17 @@ const getToken = require("./getToken")
 const handleCloseLambdaArgIdentifierMode = require("./handleCloseLambdaArgIdentifierMode")
 const handleCloseMultilineComment = require("./handleCloseMultilineComment")
 const handleCloseSingleLineComment = require("./handleCloseSingleLineComment")
-const handleDoubleQuote = require("./handleDoubleQuote")
 const handleEndNumberMode = require("./handleEndNumberMode")
 const handleIncrementLinesAndColumns = require("./handleIncrementLinesAndColumns")
 const handleOpenLambdaArgIdentifierMode = require("./handleOpenLambdaArgIdentifierMode")
 const handleOpenMultilineComment = require("./handleOpenMultilineComment")
 const handleOpenSingleLineComment = require("./handleOpenSingleLineComment")
+const handleOpenStringInterpolation = require("./handleOpenStringInterpolation")
 const handlePeriodWhileInNumberMode = require("./handlePeriodWhileInNumberMode")
 const handleRangeOperator = require("./handleRangeOperator")
+const handleStrings = require("./handleStrings")
 const handleTokenStartNumber = require("./handleTokenStartNumber")
+const InterpolationContextStack = require("./InterpolationContextStack")
 const pushToken = require("./pushToken")
 
 const lex = (input) => {
@@ -30,6 +32,7 @@ const lex = (input) => {
     tokenColumnNumberStart: 1,
     tokenLineNumberStart: 1,
     tokens: [],
+    ics: new InterpolationContextStack(),
   }
 
   const defineLatestCharType = () => {
@@ -57,7 +60,8 @@ const lex = (input) => {
     handleRangeOperator(state)
     handlePeriodWhileInNumberMode(state)
     handleEndNumberMode(state)
-    handleDoubleQuote(state)
+    handleStrings(state)
+    handleOpenStringInterpolation(state)
     handleOpenSingleLineComment(state)
     handleCloseSingleLineComment(state)
     handleOpenMultilineComment(state)
