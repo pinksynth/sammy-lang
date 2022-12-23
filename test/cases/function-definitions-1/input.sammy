@@ -1,0 +1,2 @@
+function multiply(a b) { a * b }
+function multiply(a) { multiply(a a) }

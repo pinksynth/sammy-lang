@@ -1,0 +1,168 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`📸 Numbers 1`] = `
+[
+  {
+    "columnNumberEnd": 2,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 1,
+    "lineNumberStart": 1,
+    "tokenType": "NUMBER",
+    "value": "1",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 2,
+    "lineNumberEnd": 2,
+    "lineNumberStart": 1,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+  {
+    "columnNumberEnd": 2,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 2,
+    "lineNumberStart": 2,
+    "tokenType": "NUMBER",
+    "value": "0",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 2,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 2,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+  {
+    "columnNumberEnd": 2,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 3,
+    "tokenType": "PAREN_OPEN",
+    "value": "(",
+  },
+  {
+    "columnNumberEnd": 3,
+    "columnNumberStart": 2,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 3,
+    "tokenType": "HYPHEN",
+    "value": "-",
+  },
+  {
+    "columnNumberEnd": 4,
+    "columnNumberStart": 3,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 3,
+    "tokenType": "NUMBER",
+    "value": "1",
+  },
+  {
+    "columnNumberEnd": 5,
+    "columnNumberStart": 4,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 3,
+    "tokenType": "PAREN_CLOSE",
+    "value": ")",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 5,
+    "lineNumberEnd": 4,
+    "lineNumberStart": 3,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+  {
+    "columnNumberEnd": 10,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 4,
+    "lineNumberStart": 4,
+    "tokenType": "NUMBER",
+    "value": "1234.5678",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 10,
+    "lineNumberEnd": 5,
+    "lineNumberStart": 4,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+  {
+    "columnNumberEnd": 12,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 5,
+    "lineNumberStart": 5,
+    "tokenType": "NUMBER",
+    "value": "315_000_000",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 12,
+    "lineNumberEnd": 6,
+    "lineNumberStart": 5,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+]
+`;
+
+exports[`📸 Numbers 2`] = `
+{
+  "children": [
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 1,
+      "type": "LITERAL_NUMBER",
+      "value": "1",
+    },
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 2,
+      "type": "LITERAL_NUMBER",
+      "value": "0",
+    },
+    {
+      "children": [
+        {
+          "columnNumberStart": 2,
+          "lineNumberStart": 3,
+          "operand": {
+            "columnNumberStart": 3,
+            "lineNumberStart": 3,
+            "type": "LITERAL_NUMBER",
+            "value": "1",
+          },
+          "operator": "-",
+          "type": "UNARY_EXPRESSION",
+        },
+      ],
+      "columnNumberStart": 1,
+      "lineNumberStart": 3,
+      "type": "GENERIC_EXPRESSION",
+    },
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 4,
+      "type": "LITERAL_NUMBER",
+      "value": "1234.5678",
+    },
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 5,
+      "type": "LITERAL_NUMBER",
+      "value": "315000000",
+    },
+  ],
+  "type": "ROOT",
+}
+`;
+
+exports[`📸 Numbers 3`] = `"1;0;( -1);1234.5678;315000000"`;

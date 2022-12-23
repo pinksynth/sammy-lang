@@ -598,7 +598,7 @@ const defineHelpers = (string) => {
   return withHelpers
 }
 
-const jsCompile = ({ ast, debug, jsGlobals }) => {
+const jsCompile = ({ ast, debug, jsGlobals = [] }) => {
   debugConsole = debug ? console : nullConsole
   debugConsole.dir(["ast", ast], { depth: null })
 

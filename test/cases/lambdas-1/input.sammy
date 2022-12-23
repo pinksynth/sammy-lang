@@ -1,0 +1,3 @@
+multiply = @ a b { a * b }
+divide = @{ $1 / $2 }
+double_all = @ $1 { $1.map(@{ $1 * 2 }) }

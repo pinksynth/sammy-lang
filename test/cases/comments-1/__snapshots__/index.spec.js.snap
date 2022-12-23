@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`📸 Comments 1`] = `
+[
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 3,
+    "lineNumberStart": 1,
+    "tokenType": "COMMENT",
+    "value": "# Inline comment
+
+",
+  },
+  {
+    "columnNumberEnd": 4,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 5,
+    "lineNumberStart": 3,
+    "tokenType": "COMMENT",
+    "value": "<<<
+  Multiline comment
+>>>",
+  },
+]
+`;
+
+exports[`📸 Comments 2`] = `
+{
+  "children": [],
+  "type": "ROOT",
+}
+`;
+
+exports[`📸 Comments 3`] = `""`;

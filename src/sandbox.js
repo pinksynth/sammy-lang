@@ -1,11 +1,14 @@
 const fs = require("fs")
-const input = fs.readFileSync("test/fixtures/1/input.sammy").toString()
-
 const { compile } = require(".")
 
+// Change these to any desired test case file, other file, or raw string.
+const SANDBOX_CASE = "big-file-1"
+const INPUT_FILE = `test/cases/${SANDBOX_CASE}/input.sammy`
+const INPUT = fs.readFileSync(INPUT_FILE).toString()
+
 compile({
-  input,
-  // debug: true,
+  input: INPUT,
+  debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],
   writeToFiles: true,
 })

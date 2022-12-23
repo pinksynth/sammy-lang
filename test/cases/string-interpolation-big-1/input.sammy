@@ -12,7 +12,7 @@ function print_receipt(subtotal customer_name) {
 			if customer_name {
 				"Have a great day, { customer_name }"
 			} else {
-				"Have a great day!"
+				"Have a { if Math.random() > 0.5 { "great" } else { "lousy" } } day!"
 			}
 		}
 	"
