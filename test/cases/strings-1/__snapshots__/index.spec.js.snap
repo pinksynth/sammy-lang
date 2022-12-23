@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`📸 Strings 1`] = `
+[
+  {
+    "columnNumberEnd": 12,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 1,
+    "lineNumberStart": 1,
+    "tokenType": "STRING_PURE",
+    "value": ""Fooberton"",
+  },
+]
+`;
+
+exports[`📸 Strings 2`] = `
+{
+  "children": [
+    {
+      "columnNumberStart": 1,
+      "interpolations": [],
+      "lineNumberStart": 1,
+      "subStrings": [
+        "Fooberton",
+      ],
+      "type": "LITERAL_STRING",
+    },
+  ],
+  "type": "ROOT",
+}
+`;
+
+exports[`📸 Strings 3`] = `"\`Fooberton\`"`;

@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`📸 Variables 1`] = `
+[
+  {
+    "columnNumberEnd": 5,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 1,
+    "lineNumberStart": 1,
+    "tokenType": "BOOLEAN",
+    "value": "true",
+  },
+  {
+    "columnNumberEnd": 1,
+    "columnNumberStart": 5,
+    "lineNumberEnd": 2,
+    "lineNumberStart": 1,
+    "tokenType": "WHITESPACE",
+    "value": "
+",
+  },
+  {
+    "columnNumberEnd": 6,
+    "columnNumberStart": 1,
+    "lineNumberEnd": 2,
+    "lineNumberStart": 2,
+    "tokenType": "BOOLEAN",
+    "value": "false",
+  },
+]
+`;
+
+exports[`📸 Variables 2`] = `
+{
+  "children": [
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 1,
+      "type": "LITERAL_BOOLEAN",
+      "value": "true",
+    },
+    {
+      "columnNumberStart": 1,
+      "lineNumberStart": 2,
+      "type": "LITERAL_BOOLEAN",
+      "value": "false",
+    },
+  ],
+  "type": "ROOT",
+}
+`;
+
+exports[`📸 Variables 3`] = `"true;false"`;

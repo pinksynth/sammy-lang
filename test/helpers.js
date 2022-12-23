@@ -22,6 +22,13 @@ const performSnapshotAssertions = (testCaseName, inputDir) => {
   })
 }
 
-const expectCompiledEval = (input) => expect(eval(compile({ input })))
+const expectCompiledEval = (input) => {
+  // Allow input string to be used with "toThrow" in a way similar to normal Jest.
+  if (typeof input === "function") {
+    return expect(() => eval(compile({ input: input() })))
+  }
+
+  return expect(eval(compile({ input })))
+}
 
 module.exports = { expectCompiledEval, performSnapshotAssertions }
