@@ -1,4 +1,4 @@
-const opPriority = (operator) => {
+const operatorPrecedence = (operator) => {
   switch (operator) {
     case "..":
       return 0
@@ -30,4 +30,4 @@ const opPriority = (operator) => {
   }
 }
 
-module.exports = opPriority
+module.exports = operatorPrecedence

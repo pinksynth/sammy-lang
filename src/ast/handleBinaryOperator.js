@@ -1,5 +1,5 @@
 const nt = require("./nodeTypes")
-const opPriority = require("./opPriority")
+const operatorPrecedence = require("./operatorPrecedence")
 const st = require("./scopeTypes")
 
 const handleSuperiorOperator = ({
@@ -92,7 +92,7 @@ const handleBinaryOperator = ({
   // In order to do this, we take the left operand ((2 + 3)) and check if it is a binary expression with a lower-priority operator. If it is, then we instead replace the whole node with its lefthand operand (2).
   if (
     leftOperand.type === nt.BINARY_EXPR &&
-    opPriority(leftOperand.operator) < opPriority(token.value)
+    operatorPrecedence(leftOperand.operator) < operatorPrecedence(token.value)
   ) {
     handleSuperiorOperator({
       leftOperand,

@@ -6,9 +6,12 @@ const getAstFromTokens = require("../src/ast")
 const deleteParents = require("../src/ast/deleteParents")
 const jsCompile = require("../src/jsCompiler")
 const lex = require("../src/lexer")
-const jsGlobals = ["console", "Math", "foo", "baz"]
 
-const performSnapshotAssertions = (testCaseName, inputDir) => {
+const performSnapshotAssertions = (
+  testCaseName,
+  inputDir,
+  { jsGlobals } = {}
+) => {
   const inputFile = path.resolve(inputDir, "input.sammy")
   const input = fs.readFileSync(inputFile).toString()
 
