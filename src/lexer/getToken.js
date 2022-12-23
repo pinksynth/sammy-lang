@@ -120,6 +120,7 @@ const getToken = (state) => {
       squiggles += " "
     }
     squiggles += "^"
+    // TODO: Implement test
     throw new Error(
       `Unexpected token ${value} on line ${currentLineNumber}:\n${currentLineValue}\n${squiggles}`
     )

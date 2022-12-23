@@ -89,6 +89,7 @@ const walkEnumCases = ({ children, name: enumName }) =>
       const childValueNode = child.children[0]
       const id = `$__${enumName}.${childVariable}`
       if (!validEnumValues.includes(childValueNode.type)) {
+        // TODO: Implement test
         throw new Error(
           `Invalid enum case value of type ${childValueNode.type} on line ${child.lineNumberStart} when defining enum ${enumName}. Valid values are strings, numbers, and booleans.`
         )
@@ -142,6 +143,7 @@ const walkNode = ({
       for (const { type, value } of node.args) {
         if (type === nt.IDENTIFIER) {
           if (inScope(value, varsInScope)) {
+            // TODO: Implement test
             throw new Error(
               `Cannot use "${value}" as a function argument on line ${node.lineNumberStart} because it is already defined in the current scope.`
             )
@@ -253,6 +255,7 @@ const walkNode = ({
       const patternNode = node.handlerPatterns[0]
       const secondPatternNode = node.handlerPatterns[1]
       if (secondPatternNode) {
+        // TODO: Implement test
         throw new Error(
           `Multiple error handlers are not supported for the jsCompiler (yet). Evaluating ${secondPatternNode.type}:${secondPatternNode.value} on line ${secondPatternNode.lineNumberStart}`
         )
@@ -262,6 +265,7 @@ const walkNode = ({
         catchContentsToPrint = ""
       if (patternNode) {
         if (patternNode.type !== nt.IDENTIFIER) {
+          // TODO: Implement test
           throw new Error(
             `Pattern matching is not supported for error handlers in the jsCompiler (yet). Evaluating ${patternNode.type} on line ${patternNode.lineNumberStart}`
           )
@@ -343,6 +347,7 @@ const walkNode = ({
       if (node.operator === "->") {
         if (node.right.type !== nt.FUNCTION_CALL) {
           // TODO: Should this check happen in lexer? Either way we should describe the failing token with line/column number.
+          // TODO: Implement test
           throw new Error(
             `Attempted to pipe into an expression which is not a function call: "${node.right.type}" on line ${node.right.lineNumberStart}`
           )
@@ -378,6 +383,7 @@ const walkNode = ({
               return [`"${enumCase.id}"`, context]
             }
           } else {
+            // TODO: Implement test
             throw new Error(
               `Error on line ${node.right.lineNumberStart}. Case "${caseName}" does not exist on enum "${enumDefinition.name}"`
             )
@@ -489,10 +495,12 @@ const walkNode = ({
 
     case nt.ASSIGNMENT: {
       if (inScopeAsConstant(node.variable, varsInScope)) {
+        // TODO: Implement test
         throw new Error(
           `Error on line ${node.lineNumberStart}: Variable "${node.variable}" has already been assigned. To allow it to be reassigned, initially assign it as: "weak ${node.variable}"`
         )
       } else if (getEnumDefinitionByName(node.variable, enumDefinitions)) {
+        // TODO: Implement test
         throw new Error(
           `Error on line ${node.lineNumberStart}: Could not assign "${node.variable}" as a variable because it has already been defined as an enum.`
         )
@@ -571,6 +579,7 @@ const walkNode = ({
       // Raise errors if attempting to use variables that have not been defined.
       if (node.type === nt.IDENTIFIER && varsInScope) {
         if (!isPropertyAccess && !inScope(node.value, varsInScope)) {
+          // TODO: Implement test
           throw new Error(
             `Variable ${node.value} on line ${node.lineNumberStart} is not defined in the current scope.`
           )
@@ -584,6 +593,7 @@ const walkNode = ({
     }
 
     default:
+      // TODO: Implement test
       throw new Error(
         `AST node type "${node.type}" has not been implemented for the jsCompiler. See line ${node.lineNumberStart}.`
       )

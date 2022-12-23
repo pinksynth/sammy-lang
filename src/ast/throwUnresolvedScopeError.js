@@ -18,6 +18,7 @@ const throwUnresolvedScopeError = (scopes) => {
       )
     ? "an expression"
     : "(unknown)"
+  // TODO: Implement test
   throw new Error(`Unexpected end of input. Expected ${expectedToken}.`)
 }
 module.exports = throwUnresolvedScopeError

@@ -12,6 +12,7 @@ const getPushToExpressionListFn =
       scope === st.OBJECT_VALUE &&
       node.keys.length !== node.values.length + 1
     ) {
+      // TODO: Implement test
       throw new Error(
         `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`
       )
@@ -32,6 +33,7 @@ const getPushToExpressionListFn =
       scope === st.TRY_HANDLER_PATTERN &&
       node.handlers.length !== node.handlerPatterns.length
     ) {
+      // TODO: Implement test
       throw new Error(
         `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected a colon to open an error handler.`
       )
@@ -42,6 +44,7 @@ const getPushToExpressionListFn =
       childNode.type !== nt.IDENTIFIER &&
       childNode.type !== nt.ASSIGNMENT
     ) {
+      // TODO: Implement test
       throw new Error(
         `Struct definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside struct "${node.name}" on line ${token.lineNumberStart}`
       )
@@ -52,6 +55,7 @@ const getPushToExpressionListFn =
       childNode.type !== nt.IDENTIFIER &&
       childNode.type !== nt.ASSIGNMENT
     ) {
+      // TODO: Implement test
       throw new Error(
         `Enum definitions may only contain key names and assignments. Evaluating token of type ${childNode.type} inside enum "${node.name}" on line ${token.lineNumberStart}`
       )

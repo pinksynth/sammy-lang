@@ -17,6 +17,7 @@ const handleFunctiondefinitionArgs = ({
     return
   } else if (tokenType === tt.PAREN_CLOSE) {
     if (nextTokenType !== tt.CURLY_OPEN) {
+      // TODO: Implement test
       throw new Error(
         `Unexpected token "${nextToken.value}" when defining a function on line ${token.lineNumberStart}`
       )
@@ -30,6 +31,7 @@ const handleFunctiondefinitionArgs = ({
 
     return
   } else {
+    // TODO: Implement test
     throw new Error(
       `Unexpected token "${nextToken.value}" when defining function arguments on line ${token.lineNumberStart}`
     )

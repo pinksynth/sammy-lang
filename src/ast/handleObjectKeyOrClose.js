@@ -22,6 +22,7 @@ const handleObjectKeyOrClose = ({
 
       return
     } else {
+      // TODO: Implement test
       throw new Error(
         `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${nextToken.lineNumberStart}`
       )
@@ -31,6 +32,7 @@ const handleObjectKeyOrClose = ({
 
     return
   } else {
+    // TODO: Implement test
     throw new Error(
       `Syntax Error inside object literal. Unexpected token ${token.value} (${tokenType}) on line ${token.lineNumberStart}`
     )

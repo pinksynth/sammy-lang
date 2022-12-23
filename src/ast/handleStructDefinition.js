@@ -12,6 +12,7 @@ const handleStructDefinition = ({
   token,
 }) => {
   if (currentScope !== st.ROOT) {
+    // TODO: Implement test
     throw new Error(
       `Cannot define struct "${nextToken.value}" in scope ${currentScope} on line ${token.lineNumberStart}. Structs may only be defined in the root scope.`
     )

@@ -9,6 +9,7 @@ const handleCloseParen = ({ currentScope, pop, token }) => {
       st.IF_CONDITION,
     ].includes(currentScope)
   ) {
+    // TODO: Implement test
     throw new Error(
       `Unexpected closing bracket ")" on line ${token.lineNumberStart}`
     )

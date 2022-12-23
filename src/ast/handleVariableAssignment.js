@@ -21,6 +21,7 @@ const handleVariableAssignment = ({
       st.STRUCT_DEFINITION,
     ].includes(currentScope)
   ) {
+    // TODO: Implement test
     throw new Error(
       `Unexpected assigment on line ${token.lineNumberStart}: ${token.value}`
     )

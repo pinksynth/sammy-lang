@@ -5,6 +5,7 @@
 //     zipArrays([1, 2, 3, 4, 5], ["a", "b", "c"]) //=> Error
 const zipArrays = (arrayA, arrayB) => {
   if (arrayA.length !== arrayB.length && arrayA.length !== arrayB.length + 1) {
+    // TODO: Implement test
     throw new Error(
       `Arrays provided to zipArrays were not of valid lengths. First array length: ${arrayA.length}; Second array length: ${arrayB.length}.`
     )

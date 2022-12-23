@@ -33,6 +33,7 @@ const getTerminalNode = ({ parent, token }) => {
       type = nt.CONCISE_LAMBDA_ARGUMENT
       break
     default:
+      // TODO: Implement test
       throw new Error(
         `Invalid type ${tokenType} encountered on line ${token.lineNumberStart}`
       )

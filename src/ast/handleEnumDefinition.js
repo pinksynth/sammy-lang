@@ -12,6 +12,7 @@ const handleEnumDefinition = ({
   token,
 }) => {
   if (currentScope !== st.ROOT) {
+    // TODO: Implement test
     throw new Error(
       `Cannot define enum "${nextToken.value}" in scope ${currentScope} on line ${token.lineNumberStart}. Enums may only be define in the root scope.`
     )

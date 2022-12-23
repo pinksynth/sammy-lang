@@ -13,6 +13,7 @@ const handleLambdaArgs = ({ node, swapScope, token, tokenType }) => {
 
     return
   } else {
+    // TODO: Implement test
     throw new Error(
       `Unexpected token "${token.value}" when defining a function on line ${token.lineNumberStart}`
     )

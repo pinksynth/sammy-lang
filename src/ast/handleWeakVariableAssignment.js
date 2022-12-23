@@ -16,6 +16,7 @@ const handleWeakVariableAssignment = ({
       currentScope
     )
   ) {
+    // TODO: Implement test
     throw new Error(
       `Unexpected weak assigment on line ${nextToken.lineNumberStart}: ${nextToken.value}`
     )

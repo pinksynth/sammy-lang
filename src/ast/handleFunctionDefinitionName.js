@@ -13,6 +13,7 @@ const handleFunctiondefinitionName = ({
   token,
 }) => {
   if (thirdTokenType !== tt.PAREN_OPEN) {
+    // TODO: Implement test
     throw new Error(
       `Syntax Error for function ${nextToken.value} on line ${token.lineNumberStart}`
     )

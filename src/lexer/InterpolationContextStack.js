@@ -57,6 +57,7 @@ class InterpolationContextStack {
 
   decrementContext() {
     if (this.peek() === 0) {
+      // TODO: Implement test
       throw new Error(
         "Error in lexer. Could not decrement interpolation context."
       )
@@ -69,6 +70,7 @@ class InterpolationContextStack {
 
   popContext() {
     if (this.peek() !== 0) {
+      // TODO: Implement test
       throw new Error("Error in lexer. Could not pop interpolation context.")
     }
 

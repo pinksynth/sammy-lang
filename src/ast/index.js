@@ -141,6 +141,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
     // Right side of "dot" can only be identifier
     if (node.type === nt.BINARY_EXPR && node.operator === ".") {
       if (tokenType !== tt.VAR) {
+        // TODO: Implement test
         throw new Error(
           `Syntax error on line ${token.lineNumberStart}. Unexpected token "${token.value}"`
         )
@@ -355,6 +356,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
+    // TODO: Implement test
     throw new Error(
       `Unexpected token "${token.value}" (${tokenType}) on line ${token.lineNumberStart}`
     )

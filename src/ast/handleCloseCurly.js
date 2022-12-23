@@ -11,6 +11,7 @@ const handleCloseCurly = ({ currentScope, pop, token }) => {
       st.STRUCT_DEFINITION,
     ].includes(currentScope)
   ) {
+    // TODO: Implement test
     throw new Error(
       `Unexpected closing brace "}" on line ${token.lineNumberStart}`
     )
