@@ -7,11 +7,8 @@ const getPushToExpressionListFn =
     // FIXME: The lines between this function and the currentExpressionList function are becoming pretty blurred. This whole override thing feely really smelly. It's probably time to clean stuff up.
     const scope = scopeOverride || currentScope
 
-    // We want one expression per key in object literals.
-    if (
-      scope === st.OBJECT_VALUE &&
-      node.keys.length !== node.values.length + 1
-    ) {
+    // We want one expression per key in map literals.
+    if (scope === st.MAP_VALUE && node.keys.length !== node.values.length + 1) {
       // TODO: Implement test
       throw new Error(
         `Invalid expression ${token.value} on line ${token.lineNumberStart}. Expected "]" or ",".`

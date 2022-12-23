@@ -142,7 +142,7 @@ if
 }
 ```
 
-### Objects
+### Maps
 
 ```
 %[key: val]

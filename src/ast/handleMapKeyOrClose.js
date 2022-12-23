@@ -2,7 +2,7 @@ const st = require("./scopeTypes")
 const tt = require("../tokenTypes")
 const getTerminalNode = require("./getTerminalNode")
 
-const handleObjectKeyOrClose = ({
+const handleMapKeyOrClose = ({
   consumeExtra,
   nextToken,
   nextTokenType,
@@ -16,7 +16,7 @@ const handleObjectKeyOrClose = ({
   if (tt.TERMINALS.includes(tokenType)) {
     if (nextTokenType === tt.COLON) {
       pushToExpressionList(getTerminalNode({ parent: node, token }))
-      swapScope(st.OBJECT_VALUE)
+      swapScope(st.MAP_VALUE)
       // We have consumed the key as well as the colon, so increment the tokens by an extra one.
       consumeExtra()
 
@@ -24,7 +24,7 @@ const handleObjectKeyOrClose = ({
     } else {
       // TODO: Implement test
       throw new Error(
-        `Syntax Error inside object literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${nextToken.lineNumberStart}`
+        `Syntax Error inside map literal. Unexpected token ${nextToken.value} (${nextTokenType}) on line ${nextToken.lineNumberStart}`
       )
     }
   } else if (tokenType === tt.BRACKET_CLOSE) {
@@ -34,9 +34,9 @@ const handleObjectKeyOrClose = ({
   } else {
     // TODO: Implement test
     throw new Error(
-      `Syntax Error inside object literal. Unexpected token ${token.value} (${tokenType}) on line ${token.lineNumberStart}`
+      `Syntax Error inside map literal. Unexpected token ${token.value} (${tokenType}) on line ${token.lineNumberStart}`
     )
   }
 }
 
-module.exports = handleObjectKeyOrClose
+module.exports = handleMapKeyOrClose

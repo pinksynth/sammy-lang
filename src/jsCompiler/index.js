@@ -296,7 +296,7 @@ const walkNode = ({
 
     // TODO: Enforce keys for structs. In the short term, struct keys will have to be enforced at runtime using struct helper functions.
     case nt.LITERAL_STRUCT:
-    case nt.LITERAL_OBJECT: {
+    case nt.LITERAL_MAP: {
       let lambdaVarsRequested = []
       const expression = `({${node.keys
         .map((key, index) => {

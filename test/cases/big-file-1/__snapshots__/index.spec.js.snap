@@ -709,7 +709,7 @@ exports[`📸 Big file with lots of language features 1`] = `
     "lineNumberEnd": 23,
     "lineNumberStart": 22,
     "tokenType": "COMMENT",
-    "value": "# Objects use syntax %[]
+    "value": "# Maps use syntax %[]
 ",
   },
   {
@@ -717,7 +717,7 @@ exports[`📸 Big file with lots of language features 1`] = `
     "columnNumberStart": 1,
     "lineNumberEnd": 23,
     "lineNumberStart": 23,
-    "tokenType": "OBJECT_OPEN",
+    "tokenType": "MAP_OPEN",
     "value": "%[",
   },
   {
@@ -4868,7 +4868,7 @@ exports[`📸 Big file with lots of language features 2`] = `
         },
       ],
       "lineNumberStart": 23,
-      "type": "LITERAL_OBJECT",
+      "type": "LITERAL_MAP",
       "values": [
         {
           "columnNumberStart": 8,

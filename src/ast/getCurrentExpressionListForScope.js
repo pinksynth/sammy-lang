@@ -4,9 +4,9 @@ const getCurrentExpressionListForScope = ({ currentScope, node }) => {
   let currentExpressionList = node.children
   if (currentScope === st.IF_CONDITION) {
     currentExpressionList = node.condition
-  } else if (currentScope === st.OBJECT_KEY) {
+  } else if (currentScope === st.MAP_KEY) {
     currentExpressionList = node.keys
-  } else if (currentScope === st.OBJECT_VALUE) {
+  } else if (currentScope === st.MAP_VALUE) {
     currentExpressionList = node.values
   } else if (currentScope === st.IF_ELSE) {
     currentExpressionList = node.else

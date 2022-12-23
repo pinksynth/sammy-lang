@@ -1,17 +1,17 @@
 const nt = require("./nodeTypes")
 const st = require("./scopeTypes")
 
-const handleObjectOpen = ({
+const handleMapOpen = ({
   node,
   pushToExpressionList,
   scopes,
   setNode,
   token,
 }) => {
-  scopes.push(st.OBJECT_KEY)
+  scopes.push(st.MAP_KEY)
 
   const child = {
-    type: nt.LITERAL_OBJECT,
+    type: nt.LITERAL_MAP,
     keys: [],
     values: [],
     parent: node,
@@ -22,4 +22,4 @@ const handleObjectOpen = ({
   setNode(child)
 }
 
-module.exports = handleObjectOpen
+module.exports = handleMapOpen

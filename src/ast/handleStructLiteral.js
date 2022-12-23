@@ -10,7 +10,7 @@ const handleStructLiteral = ({
   scopes,
   token,
 }) => {
-  scopes.push(st.OBJECT_KEY)
+  scopes.push(st.MAP_KEY)
 
   const child = {
     type: nt.LITERAL_STRUCT,

@@ -2,7 +2,7 @@ const st = require("./scopeTypes")
 
 const throwUnresolvedScopeError = (scopes) => {
   const currentScope = scopes[scopes.length - 1]
-  const expectedToken = [st.ARRAY, st.OBJECT_VALUE].includes(currentScope)
+  const expectedToken = [st.ARRAY, st.MAP_VALUE].includes(currentScope)
     ? '"]"'
     : [
         st.FUNCTION_CALL_ARGS,

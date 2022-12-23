@@ -19,7 +19,7 @@ name = name.toUpperCase()
 my_range = 1..10
 reverse_alphabet = "z".."a"
 
-# Objects use syntax %[]
+# Maps use syntax %[]
 %[foo: "bar", baz: a]
 
 # Functions are similar to JS, but with space-separated args.

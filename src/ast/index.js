@@ -28,8 +28,8 @@ const handleKeywordIf = require("./handleKeywordIf")
 const handleKeywordTry = require("./handleKeywordTry")
 const handleLambdaArgs = require("./handleLambdaArgs")
 const handleLambdaOpen = require("./handleLambdaOpen")
-const handleObjectKeyOrClose = require("./handleObjectKeyOrClose")
-const handleObjectOpen = require("./handleObjectOpen")
+const handleMapKeyOrClose = require("./handleMapKeyOrClose")
+const handleMapOpen = require("./handleMapOpen")
 const handleStringInterpAfter = require("./handleStringInterpAfter")
 const handleStringInterpBefore = require("./handleStringInterpBefore")
 const handleStringInterpBetween = require("./handleStringInterpBetween")
@@ -224,9 +224,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Object key or closing curly
-    if (currentScope === st.OBJECT_KEY) {
-      handleObjectKeyOrClose(context)
+    // Map key or closing curly
+    if (currentScope === st.MAP_KEY) {
+      handleMapKeyOrClose(context)
       continue
     }
 
@@ -236,9 +236,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Handle comma after seeing object value
-    if (currentScope === st.OBJECT_VALUE && tokenType === tt.COMMA) {
-      swapScope(st.OBJECT_KEY)
+    // Handle comma after seeing map value
+    if (currentScope === st.MAP_VALUE && tokenType === tt.COMMA) {
+      swapScope(st.MAP_KEY)
       continue
     }
 
@@ -258,9 +258,9 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Object open
-    if (tokenType === tt.OBJECT_OPEN) {
-      handleObjectOpen(context)
+    // Map open
+    if (tokenType === tt.MAP_OPEN) {
+      handleMapOpen(context)
       continue
     }
 
@@ -294,7 +294,7 @@ const getAstFromTokens = ({ tokens, debug }) => {
       continue
     }
 
-    // Close array or object
+    // Close array or map
     if (tokenType === tt.BRACKET_CLOSE) {
       handleCloseBracket(context)
       continue

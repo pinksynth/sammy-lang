@@ -48,7 +48,7 @@ const getToken = (state) => {
   } else if (value === "true" || value === "false") {
     tokenType = tt.BOOLEAN
   } else if (value === "%[") {
-    tokenType = tt.OBJECT_OPEN
+    tokenType = tt.MAP_OPEN
   } else if (value === "->") {
     tokenType = tt.FORWARD_PIPE
   } else if (value === "@") {
