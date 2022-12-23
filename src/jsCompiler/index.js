@@ -497,12 +497,10 @@ const walkNode = ({
 
     case nt.ASSIGNMENT: {
       if (inScopeAsConstant(node.variable, varsInScope)) {
-        // TODO: Implement test
         throw new Error(
           `Error on line ${node.lineNumberStart}: Variable "${node.variable}" has already been assigned. To allow it to be reassigned, initially assign it as: "weak ${node.variable}"`
         )
       } else if (getEnumDefinitionByName(node.variable, enumDefinitions)) {
-        // TODO: Implement test
         throw new Error(
           `Error on line ${node.lineNumberStart}: Could not assign "${node.variable}" as a variable because it has already been defined as an enum.`
         )
