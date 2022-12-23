@@ -17,6 +17,7 @@ const handleVariableAssignment = ({
       st.IF_BODY,
       st.LAMBDA_BODY,
       st.ROOT,
+      st.STRING_INTERPOLATION,
       st.STRUCT_DEFINITION,
     ].includes(currentScope)
   ) {
