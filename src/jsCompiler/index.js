@@ -436,6 +436,8 @@ const walkNode = ({
       if (node.operator === "..") {
         shouldDefineRangeFunc = true
         return [`(${RANGE_FUNC_NAME}(${left},${right}))`, context]
+      } else if (node.operator === "^") {
+        return [`Math.pow(${left},${right})`, context]
       } else {
         return [`${left}${jsOperator}${right}`, context]
       }
