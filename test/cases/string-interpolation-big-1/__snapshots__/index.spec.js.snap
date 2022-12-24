@@ -1480,6 +1480,6 @@ exports[`📸 Recursive string interpolation 3`] = `
 		--------------------
 		Total:    \${(()=>{return get_tax(subtotal)+subtotal})()}
 
-		\${(()=>{return (()=>{let tmp;if(customer_name){tmp=\`Have a great day, \${(()=>{return customer_name})()}\`}else{tmp=\`Have a \${(()=>{return (()=>{let tmp;if(Math.random()>0.5){tmp=\`great\`}else{tmp=\`lousy\`}return tmp})()})()} day!\`}return tmp})()})()}
+		\${(()=>{return (()=>{let tmp=null;if(customer_name){tmp=\`Have a great day, \${(()=>{return customer_name})()}\`}else{tmp=\`Have a \${(()=>{return (()=>{let tmp=null;if(Math.random()>0.5){tmp=\`great\`}else{tmp=\`lousy\`}return tmp})()})()} day!\`}return tmp})()})()}
 	\`};function print_receipt$1(subtotal){return print_receipt$2(subtotal,false)};print_receipt$2(50,\`Jimbo\`);print_receipt$1(75)"
 `;

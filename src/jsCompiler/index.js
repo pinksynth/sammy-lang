@@ -237,7 +237,7 @@ const walkNode = ({
         ]
       }
       return [
-        `(()=>{let tmp;${statements}return tmp})()`,
+        `(()=>{let tmp=null;${statements}return tmp})()`,
         { lambdaVarsRequested },
       ]
     }
@@ -289,7 +289,7 @@ const walkNode = ({
       }
 
       return [
-        `(()=>{let tmp;try{${body}}catch(${errorVariable}){${catchContentsToPrint}}return tmp})()`,
+        `(()=>{let tmp=null;try{${body}}catch(${errorVariable}){${catchContentsToPrint}}return tmp})()`,
         { lambdaVarsRequested },
       ]
     }
