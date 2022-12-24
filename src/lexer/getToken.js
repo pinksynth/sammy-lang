@@ -25,8 +25,6 @@ const getToken = (state) => {
 
   if (value === "null") {
     tokenType = tt.NULL
-  } else if (value === "undefined") {
-    tokenType = tt.UNDEFINED
   } else if (value === "weak") {
     tokenType = tt.WEAK
   } else if (value === "if") {

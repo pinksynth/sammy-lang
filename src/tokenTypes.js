@@ -34,7 +34,6 @@ const t = {
   STRING_PURE: /*              */ "STRING_PURE",
   STRUCT_DEFINITION: /*        */ "STRUCT_DEFINITION",
   TRY: /*                      */ "TRY",
-  UNDEFINED: /*                */ "UNDEFINED",
   VAR: /*                      */ "VAR",
   WEAK: /*                     */ "WEAK",
   WHITESPACE: /*               */ "WHITESPACE",

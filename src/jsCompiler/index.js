@@ -574,8 +574,7 @@ const walkNode = ({
     case nt.IDENTIFIER:
     case nt.LITERAL_BOOLEAN:
     case nt.LITERAL_NULL:
-    case nt.LITERAL_NUMBER:
-    case nt.LITERAL_UNDEFINED: {
+    case nt.LITERAL_NUMBER: {
       // Raise errors if attempting to use variables that have not been defined.
       if (node.type === nt.IDENTIFIER && varsInScope) {
         if (!isPropertyAccess && !inScope(node.value, varsInScope)) {
