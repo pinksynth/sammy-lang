@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/pinksynth/sammy-lang.git"
   },
-  "author": "",
+  "author": "Sammy Taylor",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/pinksynth/sammy-lang/issues"
