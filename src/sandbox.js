@@ -6,9 +6,12 @@ const SANDBOX_CASE = "big-file-1"
 const INPUT_FILE = `test/cases/${SANDBOX_CASE}/input.sammy`
 const INPUT = fs.readFileSync(INPUT_FILE).toString()
 
-compile({
+const jsOutput = compile({
   input: INPUT,
   debug: true,
   jsGlobals: ["console", "Math", "foo", "baz"],
   writeToFiles: true,
 })
+
+// eslint-disable-next-line no-undef
+console.log(jsOutput)
