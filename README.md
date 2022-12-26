@@ -4,7 +4,9 @@ This is a project for educational purposes. It is not currently intended for Pro
 
 ## Compiling to Javascript sandbox compiler
 
-You can use `src/sandbox.js` to compile SammyScript to JavaScript. For examples of syntax, see `Specification.md` and the test cases. To run the sandbox, simply run `node src/sandbox.js`. There is not currently a CLI nor package-based implementation for the JS compiler.
+You can use `src/sandbox.js` to compile SammyScript to JavaScript. To run the sandbox, simply run `node src/sandbox.js`. There is not currently a CLI nor package-based implementation for the JS compiler. In the sandbox, you can set `writeToFiles: true` to write files to an `ouput` folder containing the tokens, AST, and compiled JS for a given input.
+
+For examples of syntax, read the [Language Features](#Language-Features) section of this document or take a look at the test cases.
 
 ## Why compile to JavaScript?
 
@@ -188,6 +190,49 @@ Items are separated with whitespace.
 [3 12]
 ```
 
+### Enums
+
+Enumerations, or "enums" allow you to defined lists of constant cases which may or may not have an explicit value defined. For instance:
+
+```sammy
+enum Directions {
+  north
+  south
+  east
+  west
+}
+```
+
+Enumerations ensure compile-time safety for using these constant values.
+
+```sammy
+Directions.north
+Directions.up
+# Error: Error on line 10. Case "up" does not exist on enum "Directions"
+```
+
+Enumerations optionally allow explicit values to be assigned to cases:
+
+```sammy
+enum Ranks {
+  ace   =  1
+  two   =  2
+  three =  3
+  four  =  4
+  five  =  5
+  six   =  6
+  seven =  7
+  eight =  8
+  nine  =  9
+  ten   = 10
+  jack  = 11
+  queen = 12
+  king  = 13
+}
+
+is_face_card = @ rank { rank >= Ranks.jack  }
+```
+
 ### Ranges
 
 The range operator (`..`) can be used to construct arrays on-the-fly. They can be used for integers or single-character strings.
@@ -230,9 +275,7 @@ g
 a = b() c = d - e f() g
 ```
 
-#### Whitespace "gotchas"
-
-##### Negative numbers
+#### Negative numbers
 
 Negative numbers should sometimes be put in parentheses. The language will treat the "minus" operator for subtraction if there is a lefthand expression to subtract from (regardless of whitespace).
 
@@ -256,7 +299,7 @@ This can be resolved using parentheses:
 ]
 ```
 
-##### Parentheses and function calls
+#### Parentheses and function calls
 
 When encountering a `(` token, the language will treat it as a function call if the lefthand token is an identifier (`foo`) or property access (`foo.bar`). So the following expression is evaluated as `[foo.bar(a + b)]`:
 
