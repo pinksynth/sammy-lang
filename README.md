@@ -203,7 +203,7 @@ enum Directions {
 }
 ```
 
-Enumerations ensure compile-time safety for using these constant values.
+Enumerations will be used to ensure compile-time safety for using these constant values.\*
 
 ```sammy
 Directions.north
@@ -232,6 +232,8 @@ enum Ranks {
 
 is_face_card = @ rank { rank >= Ranks.jack  }
 ```
+
+<small>\*Since an assigned variable can contain any enum, enum case, or function, it is not yet possible to have any real compile-time type safety. So the enum case error warnings only apply if you attempt to access an enum case directly.</small>
 
 ### Ranges
 
