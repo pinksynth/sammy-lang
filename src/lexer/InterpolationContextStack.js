@@ -5,43 +5,43 @@ The following demonstrates how this stack is used by the lexer (also see notes i
 
 "a { b(@{ "c { d } e" }) }"
 ^
-At this token, the stack looks like: []
+At this token, the stack looks like: [0]
 Because we have not entered into any interpolation contexts.
 
 "a { b(@{ "c { d } e" }) }"
      ^
-     At this token, the stack looks like: [0]
+     At this token, the stack looks like: [0, 0]
      Because we entered into an interpolation context but haven't seen any curly braces.
 
 "a { b(@{ "c { d } e" }) }"
           ^
-          At this token, the stack looks like: [1]
+          At this token, the stack looks like: [0, 1]
           Because we entered into an interpolation context and saw a curly brace for the lambda. We will need a corresponding righthand brace before we 
 
 "a { b(@{ "c { d } e" }) }"
                ^
-               At this token, the stack looks like: [1, 0]
+               At this token, the stack looks like: [0, 1, 0]
                Because we entered into an additional interpolation context but haven't seen any curly braces in the new context.
 
 "a { b(@{ "c { d } e" }) }"
                  ^
-                 At this token, the stack looks like: [1]
+                 At this token, the stack looks like: [0, 1]
                  Because we popped exited the innermost interpolation context. We'll still need to see an additional righthand curly before we're ready to pop the new context.
 
 "a { b(@{ "c { d } e" }) }"
                       ^
-                      At this token, the stack looks like: [0]
+                      At this token, the stack looks like: [0, 0]
                       Because we found the extra righthand curly brace we needed before we could pop the current interpolation context.
 
 "a { b(@{ "c { d } e" }) }"
                          ^
-                         At this token, the stack looks like: []
+                         At this token, the stack looks like: [0]
                          Because we found the righthand curly brace we needed to exit the outermost interpolation context. Now we are not in an interpolation context.
 */
 
 class InterpolationContextStack {
   constructor() {
-    this.body = []
+    this.body = [0]
   }
 
   push = (item) => this.body.push(item)
@@ -53,7 +53,14 @@ class InterpolationContextStack {
     this.body[this.body.length - 1] = newValue
   }
 
-  incrementContext = () => this.updateHead(this.peek() + 1)
+  incrementContext = () => {
+    if (this.body.length === 0) {
+      throw new Error(
+        "Error in lexer. Cannot increment interpolation context if no context exists."
+      )
+    }
+    this.updateHead(this.peek() + 1)
+  }
 
   decrementContext() {
     if (this.peek() === 0) {
@@ -70,7 +77,6 @@ class InterpolationContextStack {
 
   popContext() {
     if (this.peek() !== 0) {
-      // TODO: Implement test
       throw new Error("Error in lexer. Could not pop interpolation context.")
     }
 
