@@ -3,6 +3,9 @@ const charTypeFrom = require("../charTypeFrom")
 
 // Use the Interpolation Context Stack to keep track of interpolation contexts.
 const handleStrings = (state) => {
+  if (state.multilineCommentMode || state.singleLineCommentMode) {
+    return
+  }
   if (state.charType === ct.CT_DOUBLE_QUOTE) {
     if (state.stringLiteralMode) {
       if (charTypeFrom(state.input[state.index - 1]) !== ct.CT_BACKSLASH) {
