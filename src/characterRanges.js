@@ -32,7 +32,7 @@ const characterRanges = {
   [ct.CT_SINGLE_QUOTE]: /*      */ [["'"]],
   [ct.CT_SLASH]: /*             */ [["/"]],
   [ct.CT_UNDERSCORE]: /*        */ [["_"]],
-  [ct.CT_WHITESPACE]: /*        */ [["\n"], ["\t"], [" "]],
+  [ct.CT_WHITESPACE]: /*        */ [["\n"], ["\t"], [" "], ["\r"]],
 }
 
 module.exports = characterRanges
